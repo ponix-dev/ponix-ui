@@ -2,6 +2,10 @@
 bun = "latest"
 tilt = "latest"
 
+# all envs should be set in a .env file
+[env]
+_.file = '.env'
+
 [tasks.dev]
 description = "Start local development server"
 run = "bun run dev"

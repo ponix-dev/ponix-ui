@@ -4,6 +4,9 @@
 # Include the backend Tiltfile to start all backend services
 include('../ponix-rs/Tiltfile')
 
+# Read BSR token from environment (managed by mise)
+bsr_token = os.getenv('BSR_TOKEN', '')
+
 # Build the web UI Docker image for development
 docker_build(
     'ponix-web:latest',

@@ -7,8 +7,9 @@ services:
     ports:
       - "5173:5173"
     environment:
-      # API endpoint for gRPC-Web calls to backend
-      VITE_API_URL: "http://ponix-all-in-one:50051"
+      # API endpoint for gRPC-Web calls - browser connects via localhost
+      # since the backend exposes port 50051 to the host
+      VITE_API_URL: "http://localhost:50051"
     networks:
       - ponix
     restart: unless-stopped
