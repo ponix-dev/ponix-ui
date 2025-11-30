@@ -1,0 +1,46 @@
+# Dependencies (will be installed in container)
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+**/dist/
+build/
+.vite/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test files
+**/*.test.*
+**/*.spec.*
+**/tests/
+**/__tests__/
+
+# Documentation
+*.md
+!README.md
+
+# Tilt/Docker
+Tiltfile
+docker/
+.dockerignore
+
+# Misc
+.thoughts/
+.env*

@@ -1,0 +1,22 @@
+name: ponix-ui-prod
+
+services:
+  ponix-web:
+    image: ponix-web:latest
+    container_name: ponix-web
+    build:
+      context: ..
+      dockerfile: ./apps/web/Dockerfile
+      target: production
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: "3000"
+      DIST_DIR: "/app/dist"
+    networks:
+      - ponix
+    restart: unless-stopped
+
+networks:
+  ponix:
+    external: true

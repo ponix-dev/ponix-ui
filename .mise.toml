@@ -1,0 +1,23 @@
+[tools]
+bun = "latest"
+tilt = "latest"
+
+[tasks.dev]
+description = "Start local development server"
+run = "bun run dev"
+
+[tasks.up]
+description = "Start all services with Tilt"
+run = "tilt up"
+
+[tasks.down]
+description = "Stop all Tilt services"
+run = "tilt down"
+
+[tasks.build]
+description = "Build the web app"
+run = "bun run build"
+
+[tasks.typecheck]
+description = "Type check all packages"
+run = "bun run typecheck"

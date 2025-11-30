@@ -1,0 +1,14 @@
+{
+  "name": "ponix-ui",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "bun run --filter @ponix/web dev",
+    "build": "bun run --filter @ponix/web build",
+    "lint": "bun run --filter '*' lint",
+    "typecheck": "bun run --filter '*' typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2"
+  }
+}
