@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { timestampDate } from "@bufbuild/protobuf/wkt"
+import { timestampDate, type Timestamp } from "@bufbuild/protobuf/wkt"
 import { Cpu, Plus } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -73,7 +73,7 @@ export function DeviceList() {
     }
   }
 
-  const formatDate = (timestamp: { seconds: bigint; nanos: number } | undefined) => {
+  const formatDate = (timestamp: Timestamp | undefined) => {
     if (!timestamp) return "—"
     return timestampDate(timestamp).toLocaleString()
   }

@@ -4,10 +4,12 @@ import { transport } from "./transport"
 import { OrganizationService } from "@buf/ponix_ponix.bufbuild_es/organization/v1/organization_pb"
 import { GatewayService } from "@buf/ponix_ponix.bufbuild_es/gateway/v1/gateway_pb"
 import { EndDeviceService } from "@buf/ponix_ponix.bufbuild_es/end_device/v1/end_device_pb"
+import { UserService } from "@buf/ponix_ponix.bufbuild_es/user/v1/user_pb"
 
 export const organizationClient = createClient(OrganizationService, transport)
 export const gatewayClient = createClient(GatewayService, transport)
 export const endDeviceClient = createClient(EndDeviceService, transport)
+export const userClient = createClient(UserService, transport)
 
 // Re-export types for convenience
 export type {
@@ -51,3 +53,17 @@ export type {
   ListEndDevicesRequest,
   ListEndDevicesResponse,
 } from "@buf/ponix_ponix.bufbuild_es/end_device/v1/end_device_pb"
+
+export type {
+  User,
+  RegisterUserRequest,
+  RegisterUserResponse,
+  LoginRequest,
+  LoginResponse,
+  RefreshRequest,
+  RefreshResponse,
+  LogoutRequest,
+  LogoutResponse,
+  GetUserRequest,
+  GetUserResponse,
+} from "@buf/ponix_ponix.bufbuild_es/user/v1/user_pb"

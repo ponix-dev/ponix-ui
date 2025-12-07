@@ -3,6 +3,7 @@ import { Building2, Radio, Cpu, Home, Moon, Sun } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/theme-provider"
+import { UserMenu } from "./UserMenu"
 
 interface NavItemProps {
   to: string
@@ -113,6 +114,11 @@ export function AppSidebar({ organizationId, organizationName }: AppSidebarProps
             </nav>
           </>
         )}
+      </div>
+
+      {/* User Menu */}
+      <div className="border-t p-2">
+        <UserMenu />
       </div>
     </div>
   )

@@ -12,6 +12,6 @@
     "typescript": "^5.7.2"
   },
   "dependencies": {
-    "@buf/ponix_ponix.bufbuild_es": "2.10.1-20251130212524-fb4fe527b8d9.1"
+    "@buf/ponix_ponix.bufbuild_es": "2.10.1-20251206223125-54a23019280d.1"
   }
 }
