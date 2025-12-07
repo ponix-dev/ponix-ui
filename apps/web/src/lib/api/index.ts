@@ -2,9 +2,10 @@ export {
   organizationClient,
   gatewayClient,
   endDeviceClient,
+  userClient,
 } from "./client"
 
-export { transport } from "./transport"
+export { transport, setTokenGetter } from "./transport"
 
 // Re-export all types
 export type {
@@ -34,6 +35,17 @@ export type {
   GetEndDeviceResponse,
   ListEndDevicesRequest,
   ListEndDevicesResponse,
+  User,
+  RegisterUserRequest,
+  RegisterUserResponse,
+  LoginRequest,
+  LoginResponse,
+  RefreshRequest,
+  RefreshResponse,
+  LogoutRequest,
+  LogoutResponse,
+  GetUserRequest,
+  GetUserResponse,
 } from "./client"
 
 export {

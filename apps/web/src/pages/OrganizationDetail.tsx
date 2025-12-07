@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
-import { timestampDate } from "@bufbuild/protobuf/wkt"
+import { timestampDate, type Timestamp } from "@bufbuild/protobuf/wkt"
 import { Radio, Cpu } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -112,7 +112,7 @@ export function OrganizationDetail() {
     }
   }
 
-  const formatDate = (timestamp: { seconds: bigint; nanos: number } | undefined) => {
+  const formatDate = (timestamp: Timestamp | undefined) => {
     if (!timestamp) return "—"
     return timestampDate(timestamp).toLocaleString()
   }

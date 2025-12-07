@@ -4,7 +4,7 @@
     "": {
       "name": "ponix-ui",
       "dependencies": {
-        "@buf/ponix_ponix.bufbuild_es": "2.10.1-20251130212524-fb4fe527b8d9.1",
+        "@buf/ponix_ponix.bufbuild_es": "2.10.1-20251206223125-54a23019280d.1",
       },
       "devDependencies": {
         "typescript": "^5.7.2",
@@ -98,7 +98,7 @@
 
     "@babel/types": ["@babel/types@7.28.5", "", { "dependencies": { "@babel/helper-string-parser": "^7.27.1", "@babel/helper-validator-identifier": "^7.28.5" } }, "sha512-qQ5m48eI/MFLQ5PxQj4PFaprjyCTLI37ElWMmNs0K8Lk3dVeOdNpB3ks8jc7yM5CDmVC73eMVk/trk3fgmrUpA=="],
 
-    "@buf/ponix_ponix.bufbuild_es": ["@buf/ponix_ponix.bufbuild_es@2.10.1-20251130212524-fb4fe527b8d9.1", "https://buf.build/gen/npm/v1/@buf/ponix_ponix.bufbuild_es/-/ponix_ponix.bufbuild_es-2.10.1-20251130212524-fb4fe527b8d9.1.tgz", { "peerDependencies": { "@bufbuild/protobuf": "^2.10.1" } }, ""],
+    "@buf/ponix_ponix.bufbuild_es": ["@buf/ponix_ponix.bufbuild_es@2.10.1-20251206223125-54a23019280d.1", "https://buf.build/gen/npm/v1/@buf/ponix_ponix.bufbuild_es/-/ponix_ponix.bufbuild_es-2.10.1-20251206223125-54a23019280d.1.tgz", { "peerDependencies": { "@bufbuild/protobuf": "^2.10.1" } }, ""],
 
     "@bufbuild/protobuf": ["@bufbuild/protobuf@2.10.1", "", {}, "sha512-ckS3+vyJb5qGpEYv/s1OebUHDi/xSNtfgw1wqKZo7MR9F2z+qXr0q5XagafAG/9O0QPVIUfST0smluYSTpYFkg=="],
 
