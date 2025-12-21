@@ -10,8 +10,10 @@ import {
   type Organization,
   OrganizationStatus,
 } from "@/lib/api"
+import { useAuth } from "@/lib/auth"
 
 export function OrganizationList() {
+  const { user } = useAuth()
   const [organizations, setOrganizations] = useState<Organization[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -21,10 +23,11 @@ export function OrganizationList() {
   const [creating, setCreating] = useState(false)
 
   const fetchOrganizations = async () => {
+    if (!user) return
     try {
       setLoading(true)
       setError(null)
-      const response = await organizationClient.listOrganizations({})
+      const response = await organizationClient.userOrganizations({ userId: user.id })
       setOrganizations(response.organizations)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch organizations")
@@ -35,7 +38,7 @@ export function OrganizationList() {
 
   useEffect(() => {
     fetchOrganizations()
-  }, [])
+  }, [user])
 
   const handleCreateOrg = async () => {
     if (!newOrgName.trim()) return
@@ -150,7 +153,7 @@ export function OrganizationList() {
           {/* Organization list */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">All Organizations</CardTitle>
+              <CardTitle className="text-base">Your Organizations</CardTitle>
               <CardDescription>
                 Click an organization to manage its gateways and devices
               </CardDescription>

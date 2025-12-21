@@ -67,3 +67,8 @@ export type {
   GetUserRequest,
   GetUserResponse,
 } from "@buf/ponix_ponix.bufbuild_es/user/v1/user_pb"
+
+export type {
+  UserOrganizationsRequest,
+  UserOrganizationsResponse,
+} from "@buf/ponix_ponix.bufbuild_es/organization/v1/organization_pb"
