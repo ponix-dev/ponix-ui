@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import {
   Dialog,
   DialogContent,
@@ -22,7 +21,7 @@ import {
 } from "@/lib/api"
 
 export function DeviceList() {
-  const { orgId } = useParams<{ orgId: string }>()
+  const { orgId, workspaceId } = useParams<{ orgId: string; workspaceId: string }>()
   const [devices, setDevices] = useState<EndDevice[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -32,15 +31,18 @@ export function DeviceList() {
   const [creating, setCreating] = useState(false)
   const [newDevice, setNewDevice] = useState({
     name: "",
-    payloadConversion: "",
+    definitionId: "",
   })
 
   const fetchDevices = async () => {
-    if (!orgId) return
+    if (!orgId || !workspaceId) return
     try {
       setLoading(true)
       setError(null)
-      const response = await endDeviceClient.listEndDevices({ organizationId: orgId })
+      const response = await endDeviceClient.getWorkspaceEndDevices({
+        organizationId: orgId,
+        workspaceId,
+      })
       setDevices(response.endDevices)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch devices")
@@ -51,19 +53,20 @@ export function DeviceList() {
 
   useEffect(() => {
     fetchDevices()
-  }, [orgId])
+  }, [orgId, workspaceId])
 
   const handleCreateDevice = async () => {
-    if (!orgId || !newDevice.name.trim()) return
+    if (!orgId || !workspaceId || !newDevice.name.trim() || !newDevice.definitionId.trim()) return
 
     try {
       setCreating(true)
       await endDeviceClient.createEndDevice({
         organizationId: orgId,
+        workspaceId,
         name: newDevice.name,
-        payloadConversion: newDevice.payloadConversion || undefined,
+        definitionId: newDevice.definitionId,
       })
-      setNewDevice({ name: "", payloadConversion: "" })
+      setNewDevice({ name: "", definitionId: "" })
       setDialogOpen(false)
       fetchDevices()
     } catch (err) {
@@ -94,7 +97,7 @@ export function DeviceList() {
               <DialogHeader>
                 <DialogTitle>Create End Device</DialogTitle>
                 <DialogDescription>
-                  Register a new device to this organization.
+                  Register a new device to this workspace.
                 </DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
@@ -108,20 +111,19 @@ export function DeviceList() {
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="payloadConversion">Payload Conversion (optional)</Label>
-                  <Textarea
-                    id="payloadConversion"
-                    value={newDevice.payloadConversion}
-                    onChange={(e) => setNewDevice({ ...newDevice, payloadConversion: e.target.value })}
-                    placeholder="// Enter your conversion script here"
-                    className="min-h-[120px] font-mono text-sm bg-muted/50"
+                  <Label htmlFor="definitionId">Definition ID</Label>
+                  <Input
+                    id="definitionId"
+                    value={newDevice.definitionId}
+                    onChange={(e) => setNewDevice({ ...newDevice, definitionId: e.target.value })}
+                    placeholder="Device definition identifier"
                   />
                 </div>
               </div>
               <DialogFooter>
                 <Button
                   onClick={handleCreateDevice}
-                  disabled={creating || !newDevice.name.trim()}
+                  disabled={creating || !newDevice.name.trim() || !newDevice.definitionId.trim()}
                 >
                   {creating ? "Creating..." : "Create Device"}
                 </Button>
@@ -133,19 +135,11 @@ export function DeviceList() {
 
       <div className="flex-1 p-6">
         <div className="mx-auto max-w-6xl space-y-6">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-1">
             <Card>
               <CardHeader className="pb-2">
                 <CardDescription>Total Devices</CardDescription>
                 <CardTitle className="text-3xl">{devices.length}</CardTitle>
-              </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>With Payload Conversion</CardDescription>
-                <CardTitle className="text-3xl">
-                  {devices.filter(d => d.payloadConversion).length}
-                </CardTitle>
               </CardHeader>
             </Card>
           </div>
@@ -154,7 +148,7 @@ export function DeviceList() {
             <CardHeader>
               <CardTitle className="text-base">All Devices</CardTitle>
               <CardDescription>
-                Devices registered to this organization
+                Devices registered to this workspace
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -186,11 +180,6 @@ export function DeviceList() {
                           <div className="text-sm text-muted-foreground">
                             {device.deviceId}
                           </div>
-                          {device.payloadConversion && (
-                            <code className="mt-1 block text-xs text-muted-foreground">
-                              {device.payloadConversion}
-                            </code>
-                          )}
                         </div>
                       </div>
                       <div className="text-right text-xs text-muted-foreground">

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom"
-import { Building2, Radio, Cpu, Home, Moon, Sun } from "lucide-react"
+import { Building2, Radio, Cpu, Home, Moon, Sun, Layers, ChevronLeft } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/theme-provider"
@@ -32,9 +32,11 @@ function NavItem({ to, icon, label, active }: NavItemProps) {
 interface AppSidebarProps {
   organizationId?: string
   organizationName?: string
+  workspaceId?: string
+  workspaceName?: string
 }
 
-export function AppSidebar({ organizationId, organizationName }: AppSidebarProps) {
+export function AppSidebar({ organizationId, organizationName, workspaceId, workspaceName }: AppSidebarProps) {
   const location = useLocation()
   const { theme, setTheme } = useTheme()
 
@@ -74,6 +76,7 @@ export function AppSidebar({ organizationId, organizationName }: AppSidebarProps
 
       {/* Navigation */}
       <div className="flex-1 overflow-auto py-4">
+        {/* Main navigation - no org selected */}
         {!organizationId && (
           <nav className="grid gap-1 px-2">
             <NavItem
@@ -85,7 +88,8 @@ export function AppSidebar({ organizationId, organizationName }: AppSidebarProps
           </nav>
         )}
 
-        {organizationId && (
+        {/* Organization navigation - org selected but no workspace */}
+        {organizationId && !workspaceId && (
           <>
             <div className="px-4">
               <div className="text-xs font-medium text-muted-foreground">
@@ -106,7 +110,39 @@ export function AppSidebar({ organizationId, organizationName }: AppSidebarProps
                 active={location.pathname.includes("/gateways")}
               />
               <NavItem
-                to={`/organizations/${organizationId}/devices`}
+                to={`/organizations/${organizationId}/workspaces`}
+                icon={<Layers className="h-4 w-4" />}
+                label="Workspaces"
+                active={location.pathname.endsWith("/workspaces")}
+              />
+            </nav>
+          </>
+        )}
+
+        {/* Workspace navigation - workspace selected */}
+        {organizationId && workspaceId && (
+          <>
+            <div className="px-4">
+              <Link
+                to={`/organizations/${organizationId}`}
+                className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+              >
+                <ChevronLeft className="h-3 w-3" />
+                {organizationName || "Organization"}
+              </Link>
+              <div className="mt-1 text-sm font-medium">
+                {workspaceName || "Workspace"}
+              </div>
+            </div>
+            <nav className="mt-2 grid gap-1 px-2">
+              <NavItem
+                to={`/organizations/${organizationId}/workspaces/${workspaceId}`}
+                icon={<Layers className="h-4 w-4" />}
+                label="Overview"
+                active={location.pathname === `/organizations/${organizationId}/workspaces/${workspaceId}`}
+              />
+              <NavItem
+                to={`/organizations/${organizationId}/workspaces/${workspaceId}/devices`}
                 icon={<Cpu className="h-4 w-4" />}
                 label="End Devices"
                 active={location.pathname.includes("/devices")}

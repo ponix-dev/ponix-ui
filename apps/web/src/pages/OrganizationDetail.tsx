@@ -1,20 +1,21 @@
 import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useParams, Link } from "react-router-dom"
 import { timestampDate, type Timestamp } from "@bufbuild/protobuf/wkt"
-import { Radio, Cpu } from "lucide-react"
+import { Radio, Layers } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import {
   organizationClient,
   gatewayClient,
-  endDeviceClient,
+  workspaceClient,
   type Organization,
   type Gateway,
-  type EndDevice,
+  type Workspace,
   OrganizationStatus,
   GatewayStatus,
   GatewayType,
+  WorkspaceStatus,
 } from "@/lib/api"
 
 export function OrganizationDetail() {
@@ -22,7 +23,7 @@ export function OrganizationDetail() {
 
   const [organization, setOrganization] = useState<Organization | null>(null)
   const [gateways, setGateways] = useState<Gateway[]>([])
-  const [devices, setDevices] = useState<EndDevice[]>([])
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -34,15 +35,15 @@ export function OrganizationDetail() {
         setLoading(true)
         setError(null)
 
-        const [orgResponse, gatewaysResponse, devicesResponse] = await Promise.all([
+        const [orgResponse, gatewaysResponse, workspacesResponse] = await Promise.all([
           organizationClient.getOrganization({ organizationId: orgId }),
           gatewayClient.listGateways({ organizationId: orgId }),
-          endDeviceClient.listEndDevices({ organizationId: orgId }),
+          workspaceClient.listWorkspaces({ organizationId: orgId }),
         ])
 
         setOrganization(orgResponse.organization ?? null)
         setGateways(gatewaysResponse.gateways)
-        setDevices(devicesResponse.endDevices)
+        setWorkspaces(workspacesResponse.workspaces)
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to fetch data")
       } finally {
@@ -112,6 +113,28 @@ export function OrganizationDetail() {
     }
   }
 
+  const workspaceStatusLabel = (status: WorkspaceStatus) => {
+    switch (status) {
+      case WorkspaceStatus.ACTIVE:
+        return "Active"
+      case WorkspaceStatus.DELETED:
+        return "Deleted"
+      default:
+        return "Unknown"
+    }
+  }
+
+  const workspaceStatusVariant = (status: WorkspaceStatus) => {
+    switch (status) {
+      case WorkspaceStatus.ACTIVE:
+        return "default"
+      case WorkspaceStatus.DELETED:
+        return "secondary"
+      default:
+        return "outline"
+    }
+  }
+
   const formatDate = (timestamp: Timestamp | undefined) => {
     if (!timestamp) return "—"
     return timestampDate(timestamp).toLocaleString()
@@ -178,8 +201,8 @@ export function OrganizationDetail() {
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardDescription>End Devices</CardDescription>
-                <CardTitle className="text-3xl">{devices.length}</CardTitle>
+                <CardDescription>Workspaces</CardDescription>
+                <CardTitle className="text-3xl">{workspaces.length}</CardTitle>
               </CardHeader>
             </Card>
             <Card>
@@ -192,16 +215,16 @@ export function OrganizationDetail() {
             </Card>
           </div>
 
-          {/* Tabs for Gateways and Devices */}
+          {/* Tabs for Gateways and Workspaces */}
           <Tabs defaultValue="gateways" className="w-full">
             <TabsList>
               <TabsTrigger value="gateways" className="gap-2">
                 <Radio className="h-4 w-4" />
                 Gateways ({gateways.length})
               </TabsTrigger>
-              <TabsTrigger value="devices" className="gap-2">
-                <Cpu className="h-4 w-4" />
-                End Devices ({devices.length})
+              <TabsTrigger value="workspaces" className="gap-2">
+                <Layers className="h-4 w-4" />
+                Workspaces ({workspaces.length})
               </TabsTrigger>
             </TabsList>
 
@@ -255,46 +278,42 @@ export function OrganizationDetail() {
               </Card>
             </TabsContent>
 
-            <TabsContent value="devices" className="mt-6">
+            <TabsContent value="workspaces" className="mt-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">End Devices</CardTitle>
+                  <CardTitle className="text-base">Workspaces</CardTitle>
                   <CardDescription>
-                    Devices registered to this organization
+                    Workspaces in this organization
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {devices.length === 0 ? (
+                  {workspaces.length === 0 ? (
                     <div className="py-8 text-center text-muted-foreground">
-                      No devices registered
+                      No workspaces created
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {devices.map((device) => (
-                        <div
-                          key={device.deviceId}
-                          className="flex items-center justify-between rounded-lg border p-4"
+                      {workspaces.map((workspace) => (
+                        <Link
+                          key={workspace.id}
+                          to={`/organizations/${orgId}/workspaces/${workspace.id}`}
+                          className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                         >
                           <div className="flex items-center gap-3">
                             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                              <Cpu className="h-5 w-5 text-muted-foreground" />
+                              <Layers className="h-5 w-5 text-muted-foreground" />
                             </div>
                             <div>
-                              <div className="font-medium">{device.name}</div>
+                              <div className="font-medium">{workspace.name}</div>
                               <div className="text-sm text-muted-foreground">
-                                {device.deviceId}
+                                {workspace.id}
                               </div>
-                              {device.payloadConversion && (
-                                <code className="mt-1 block text-xs text-muted-foreground">
-                                  {device.payloadConversion}
-                                </code>
-                              )}
                             </div>
                           </div>
-                          <div className="text-right text-xs text-muted-foreground">
-                            {formatDate(device.createdAt)}
-                          </div>
-                        </div>
+                          <Badge variant={workspaceStatusVariant(workspace.status)}>
+                            {workspaceStatusLabel(workspace.status)}
+                          </Badge>
+                        </Link>
                       ))}
                     </div>
                   )}

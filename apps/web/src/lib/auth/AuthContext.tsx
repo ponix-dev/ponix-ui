@@ -36,6 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await userClient.refresh({})
       const token = response.accessToken
       setAccessToken(token)
+      // Update ref immediately so subsequent API calls have the token
+      accessTokenRef.current = token
 
       // Extract user info from token
       const payload = decodeJwtPayload(token)
@@ -63,6 +65,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response = await userClient.login({ email, password })
     const token = response.token
     setAccessToken(token)
+    // Update ref immediately so subsequent API calls have the token
+    accessTokenRef.current = token
 
     // Extract user info from token and fetch user details
     const payload = decodeJwtPayload(token)

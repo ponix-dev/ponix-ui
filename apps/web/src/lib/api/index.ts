@@ -3,6 +3,7 @@ export {
   gatewayClient,
   endDeviceClient,
   userClient,
+  workspaceClient,
 } from "./client"
 
 export { transport, setTokenGetter } from "./transport"
@@ -33,8 +34,8 @@ export type {
   CreateEndDeviceResponse,
   GetEndDeviceRequest,
   GetEndDeviceResponse,
-  ListEndDevicesRequest,
-  ListEndDevicesResponse,
+  GetWorkspaceEndDevicesRequest,
+  GetWorkspaceEndDevicesResponse,
   User,
   RegisterUserRequest,
   RegisterUserResponse,
@@ -46,10 +47,22 @@ export type {
   LogoutResponse,
   GetUserRequest,
   GetUserResponse,
+  Workspace,
+  CreateWorkspaceRequest,
+  CreateWorkspaceResponse,
+  GetWorkspaceRequest,
+  GetWorkspaceResponse,
+  UpdateWorkspaceRequest,
+  UpdateWorkspaceResponse,
+  DeleteWorkspaceRequest,
+  DeleteWorkspaceResponse,
+  ListWorkspacesRequest,
+  ListWorkspacesResponse,
 } from "./client"
 
 export {
   OrganizationStatus,
   GatewayStatus,
   GatewayType,
+  WorkspaceStatus,
 } from "./client"

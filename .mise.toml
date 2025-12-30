@@ -1,6 +1,7 @@
 [tools]
 bun = "latest"
 tilt = "latest"
+node = "latest"
 
 # all envs should be set in a .env file
 [env]
