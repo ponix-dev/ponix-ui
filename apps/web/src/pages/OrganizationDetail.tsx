@@ -182,7 +182,7 @@ export function OrganizationDetail() {
 
       {/* Content */}
       <div className="flex-1 p-6">
-        <div className="mx-auto max-w-6xl space-y-6">
+        <div className="space-y-6">
           {/* Stats cards */}
           <div className="grid gap-4 md:grid-cols-4">
             <Card>

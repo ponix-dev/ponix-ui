@@ -2,6 +2,7 @@ export {
   organizationClient,
   gatewayClient,
   endDeviceClient,
+  endDeviceDefinitionClient,
   userClient,
   workspaceClient,
 } from "./client"
@@ -58,11 +59,13 @@ export type {
   DeleteWorkspaceResponse,
   ListWorkspacesRequest,
   ListWorkspacesResponse,
+  EndDeviceDefinition,
+  CreateEndDeviceDefinitionRequest,
+  CreateEndDeviceDefinitionResponse,
+  ListEndDeviceDefinitionsRequest,
+  ListEndDeviceDefinitionsResponse,
 } from "./client"
 
 export {
-  OrganizationStatus,
-  GatewayStatus,
   GatewayType,
-  WorkspaceStatus,
 } from "./client"

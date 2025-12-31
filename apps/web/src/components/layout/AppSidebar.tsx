@@ -1,9 +1,14 @@
-import { Link, useLocation } from "react-router-dom"
-import { Building2, Radio, Cpu, Home, Moon, Sun, Layers, ChevronLeft } from "lucide-react"
+import { Link, useLocation, useParams } from "react-router-dom"
+import { useEffect, useState } from "react"
+import { Radio, Cpu, Home, Layers, ChevronLeft, FileCode } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { useTheme } from "@/components/theme-provider"
-import { UserMenu } from "./UserMenu"
+import { OrgSwitcher } from "./OrgSwitcher"
+import {
+  organizationClient,
+  workspaceClient,
+  endDeviceDefinitionClient,
+  gatewayClient,
+} from "@/lib/api"
 
 interface NavItemProps {
   to: string
@@ -29,133 +34,214 @@ function NavItem({ to, icon, label, active }: NavItemProps) {
   )
 }
 
-interface AppSidebarProps {
-  organizationId?: string
-  organizationName?: string
-  workspaceId?: string
-  workspaceName?: string
+// Sidebar header with org switcher
+function SidebarHeader({ organizationId }: { organizationId?: string }) {
+  const [orgName, setOrgName] = useState<string>()
+
+  useEffect(() => {
+    if (!organizationId) {
+      setOrgName(undefined)
+      return
+    }
+    organizationClient.getOrganization({ organizationId })
+      .then(res => setOrgName(res.organization?.name))
+      .catch(() => {})
+  }, [organizationId])
+
+  if (!organizationId) return null
+
+  return (
+    <div className="border-b">
+      <div className="flex h-14 items-center px-4">
+        <OrgSwitcher organizationId={organizationId} organizationName={orgName} />
+      </div>
+    </div>
+  )
 }
 
-export function AppSidebar({ organizationId, organizationName, workspaceId, workspaceName }: AppSidebarProps) {
+// Navigation component that updates based on route
+function SidebarNav({
+  organizationId,
+  workspaceId,
+  definitionId,
+  gatewayId,
+}: {
+  organizationId?: string
+  workspaceId?: string
+  definitionId?: string
+  gatewayId?: string
+}) {
   const location = useLocation()
-  const { theme, setTheme } = useTheme()
+  const [workspaceName, setWorkspaceName] = useState<string>()
+  const [definitionName, setDefinitionName] = useState<string>()
+  const [gatewayName, setGatewayName] = useState<string>()
 
-  const toggleTheme = () => {
-    if (theme === "light") {
-      setTheme("dark")
-    } else if (theme === "dark") {
-      setTheme("light")
-    } else {
-      // If system, check what system prefers and toggle to opposite
-      const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-      setTheme(systemDark ? "light" : "dark")
+  useEffect(() => {
+    if (!organizationId || !workspaceId) {
+      setWorkspaceName(undefined)
+      return
     }
-  }
+    workspaceClient.getWorkspace({ workspaceId, organizationId })
+      .then(res => setWorkspaceName(res.workspace?.name))
+      .catch(() => {})
+  }, [organizationId, workspaceId])
+
+  useEffect(() => {
+    if (!organizationId || !definitionId) {
+      setDefinitionName(undefined)
+      return
+    }
+    endDeviceDefinitionClient.getEndDeviceDefinition({ id: definitionId, organizationId })
+      .then(res => setDefinitionName(res.endDeviceDefinition?.name))
+      .catch(() => {})
+  }, [organizationId, definitionId])
+
+  useEffect(() => {
+    if (!organizationId || !gatewayId) {
+      setGatewayName(undefined)
+      return
+    }
+    gatewayClient.getGateway({ gatewayId, organizationId })
+      .then(res => setGatewayName(res.gateway?.name))
+      .catch(() => {})
+  }, [organizationId, gatewayId])
+
+  return (
+    <div className="flex-1 overflow-auto py-4">
+      {/* Main navigation - no org selected */}
+      {!organizationId && (
+        <nav className="grid gap-1 px-2">
+          <NavItem
+            to="/organizations"
+            icon={<Home className="h-4 w-4" />}
+            label="Organizations"
+            active={location.pathname === "/" || location.pathname === "/organizations"}
+          />
+        </nav>
+      )}
+
+      {/* Organization navigation - org selected but no workspace, definition, or gateway */}
+      {organizationId && !workspaceId && !definitionId && !gatewayId && (
+        <nav className="grid gap-1 px-2">
+          <NavItem
+            to={`/organizations/${organizationId}`}
+            icon={<Layers className="h-4 w-4" />}
+            label="Workspaces"
+            active={location.pathname === `/organizations/${organizationId}` || location.pathname.endsWith("/workspaces")}
+          />
+          <NavItem
+            to={`/organizations/${organizationId}/gateways`}
+            icon={<Radio className="h-4 w-4" />}
+            label="Gateways"
+            active={location.pathname.includes("/gateways")}
+          />
+          <NavItem
+            to={`/organizations/${organizationId}/definitions`}
+            icon={<FileCode className="h-4 w-4" />}
+            label="Definitions"
+            active={location.pathname.includes("/definitions")}
+          />
+        </nav>
+      )}
+
+      {/* Workspace navigation - workspace selected */}
+      {organizationId && workspaceId && (
+        <>
+          <div className="px-4">
+            <Link
+              to={`/organizations/${organizationId}/workspaces`}
+              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+            >
+              <ChevronLeft className="h-3 w-3" />
+              Workspaces
+            </Link>
+            <div className="mt-1 text-sm font-medium">
+              {workspaceName || "Workspace"}
+            </div>
+          </div>
+          <nav className="mt-2 grid gap-1 px-2">
+            <NavItem
+              to={`/organizations/${organizationId}/workspaces/${workspaceId}`}
+              icon={<Cpu className="h-4 w-4" />}
+              label="End Devices"
+              active
+            />
+          </nav>
+        </>
+      )}
+
+      {/* Definition navigation - definition selected */}
+      {organizationId && definitionId && (
+        <>
+          <div className="px-4">
+            <Link
+              to={`/organizations/${organizationId}/definitions`}
+              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+            >
+              <ChevronLeft className="h-3 w-3" />
+              Definitions
+            </Link>
+            <div className="mt-1 text-sm font-medium">
+              {definitionName || "Definition"}
+            </div>
+          </div>
+          <nav className="mt-2 grid gap-1 px-2">
+            <NavItem
+              to={`/organizations/${organizationId}/definitions/${definitionId}`}
+              icon={<FileCode className="h-4 w-4" />}
+              label="Overview"
+              active={location.pathname === `/organizations/${organizationId}/definitions/${definitionId}`}
+            />
+          </nav>
+        </>
+      )}
+
+      {/* Gateway navigation - gateway selected */}
+      {organizationId && gatewayId && (
+        <>
+          <div className="px-4">
+            <Link
+              to={`/organizations/${organizationId}/gateways`}
+              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+            >
+              <ChevronLeft className="h-3 w-3" />
+              Gateways
+            </Link>
+            <div className="mt-1 text-sm font-medium">
+              {gatewayName || "Gateway"}
+            </div>
+          </div>
+          <nav className="mt-2 grid gap-1 px-2">
+            <NavItem
+              to={`/organizations/${organizationId}/gateways/${gatewayId}`}
+              icon={<Radio className="h-4 w-4" />}
+              label="Overview"
+              active={location.pathname === `/organizations/${organizationId}/gateways/${gatewayId}`}
+            />
+          </nav>
+        </>
+      )}
+    </div>
+  )
+}
+
+export function AppSidebar() {
+  const { orgId, workspaceId, definitionId, gatewayId } = useParams<{
+    orgId: string
+    workspaceId: string
+    definitionId: string
+    gatewayId: string
+  }>()
 
   return (
     <div className="flex h-full w-64 flex-col border-r bg-background">
-      {/* Logo */}
-      <div className="flex h-14 items-center justify-between border-b px-4">
-        <div className="flex items-center gap-2 font-semibold">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Radio className="h-4 w-4" />
-          </div>
-          <span>Ponix</span>
-        </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleTheme}
-          className="h-8 w-8"
-        >
-          <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-      </div>
-
-      {/* Navigation */}
-      <div className="flex-1 overflow-auto py-4">
-        {/* Main navigation - no org selected */}
-        {!organizationId && (
-          <nav className="grid gap-1 px-2">
-            <NavItem
-              to="/organizations"
-              icon={<Home className="h-4 w-4" />}
-              label="Organizations"
-              active={location.pathname === "/" || location.pathname === "/organizations"}
-            />
-          </nav>
-        )}
-
-        {/* Organization navigation - org selected but no workspace */}
-        {organizationId && !workspaceId && (
-          <>
-            <div className="px-4">
-              <div className="text-xs font-medium text-muted-foreground">
-                {organizationName || "Organization"}
-              </div>
-            </div>
-            <nav className="mt-2 grid gap-1 px-2">
-              <NavItem
-                to={`/organizations/${organizationId}`}
-                icon={<Building2 className="h-4 w-4" />}
-                label="Overview"
-                active={location.pathname === `/organizations/${organizationId}`}
-              />
-              <NavItem
-                to={`/organizations/${organizationId}/gateways`}
-                icon={<Radio className="h-4 w-4" />}
-                label="Gateways"
-                active={location.pathname.includes("/gateways")}
-              />
-              <NavItem
-                to={`/organizations/${organizationId}/workspaces`}
-                icon={<Layers className="h-4 w-4" />}
-                label="Workspaces"
-                active={location.pathname.endsWith("/workspaces")}
-              />
-            </nav>
-          </>
-        )}
-
-        {/* Workspace navigation - workspace selected */}
-        {organizationId && workspaceId && (
-          <>
-            <div className="px-4">
-              <Link
-                to={`/organizations/${organizationId}`}
-                className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
-              >
-                <ChevronLeft className="h-3 w-3" />
-                {organizationName || "Organization"}
-              </Link>
-              <div className="mt-1 text-sm font-medium">
-                {workspaceName || "Workspace"}
-              </div>
-            </div>
-            <nav className="mt-2 grid gap-1 px-2">
-              <NavItem
-                to={`/organizations/${organizationId}/workspaces/${workspaceId}`}
-                icon={<Layers className="h-4 w-4" />}
-                label="Overview"
-                active={location.pathname === `/organizations/${organizationId}/workspaces/${workspaceId}`}
-              />
-              <NavItem
-                to={`/organizations/${organizationId}/workspaces/${workspaceId}/devices`}
-                icon={<Cpu className="h-4 w-4" />}
-                label="End Devices"
-                active={location.pathname.includes("/devices")}
-              />
-            </nav>
-          </>
-        )}
-      </div>
-
-      {/* User Menu */}
-      <div className="border-t p-2">
-        <UserMenu />
-      </div>
+      <SidebarHeader organizationId={orgId} />
+      <SidebarNav
+        organizationId={orgId}
+        workspaceId={workspaceId}
+        definitionId={definitionId}
+        gatewayId={gatewayId}
+      />
     </div>
   )
 }

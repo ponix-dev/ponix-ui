@@ -3,12 +3,10 @@ import { Link } from "react-router-dom"
 import { Plus, Building2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import {
   organizationClient,
   type Organization,
-  OrganizationStatus,
 } from "@/lib/api"
 import { useAuth } from "@/lib/auth"
 
@@ -55,44 +53,9 @@ export function OrganizationList() {
     }
   }
 
-  const statusVariant = (status: OrganizationStatus) => {
-    switch (status) {
-      case OrganizationStatus.ACTIVE:
-        return "default"
-      case OrganizationStatus.PENDING:
-        return "secondary"
-      case OrganizationStatus.INACTIVE:
-        return "outline"
-      default:
-        return "outline"
-    }
-  }
-
-  const statusLabel = (status: OrganizationStatus) => {
-    switch (status) {
-      case OrganizationStatus.ACTIVE:
-        return "Active"
-      case OrganizationStatus.PENDING:
-        return "Pending"
-      case OrganizationStatus.INACTIVE:
-        return "Inactive"
-      default:
-        return "Unknown"
-    }
-  }
-
   return (
-    <div className="flex flex-col">
-      {/* Header */}
-      <div className="border-b">
-        <div className="flex h-14 items-center justify-between px-6">
-          <h1 className="text-lg font-semibold">Organizations</h1>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 p-6">
-        <div className="mx-auto max-w-6xl space-y-6">
+    <div className="flex-1 overflow-auto p-6">
+        <div className="space-y-6">
           {/* Create new organization */}
           <Card>
             <CardHeader>
@@ -124,32 +87,6 @@ export function OrganizationList() {
             </div>
           )}
 
-          {/* Stats cards */}
-          <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Total Organizations</CardDescription>
-                <CardTitle className="text-3xl">{organizations.length}</CardTitle>
-              </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Active</CardDescription>
-                <CardTitle className="text-3xl">
-                  {organizations.filter(o => o.status === OrganizationStatus.ACTIVE).length}
-                </CardTitle>
-              </CardHeader>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardDescription>Pending</CardDescription>
-                <CardTitle className="text-3xl">
-                  {organizations.filter(o => o.status === OrganizationStatus.PENDING).length}
-                </CardTitle>
-              </CardHeader>
-            </Card>
-          </div>
-
           {/* Organization list */}
           <Card>
             <CardHeader>
@@ -173,7 +110,7 @@ export function OrganizationList() {
                     <Link
                       key={org.id}
                       to={`/organizations/${org.id}`}
-                      className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
+                      className="flex items-center rounded-lg border p-4 transition-colors hover:bg-muted/50"
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
@@ -186,9 +123,6 @@ export function OrganizationList() {
                           </div>
                         </div>
                       </div>
-                      <Badge variant={statusVariant(org.status)}>
-                        {statusLabel(org.status)}
-                      </Badge>
                     </Link>
                   ))}
                 </div>
@@ -196,7 +130,6 @@ export function OrganizationList() {
             </CardContent>
           </Card>
         </div>
-      </div>
     </div>
   )
 }

@@ -1,78 +1,35 @@
-import { BrowserRouter, Routes, Route, useParams, Outlet } from "react-router-dom"
-import { useEffect, useState } from "react"
+import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom"
 import { OrganizationList } from "@/pages/OrganizationList"
-import { OrganizationDetail } from "@/pages/OrganizationDetail"
 import { GatewayList } from "@/pages/GatewayList"
+import { GatewayDetail } from "@/pages/GatewayDetail"
 import { DeviceList } from "@/pages/DeviceList"
 import { WorkspaceList } from "@/pages/WorkspaceList"
-import { WorkspaceDetail } from "@/pages/WorkspaceDetail"
+import { EndDeviceDefinitionList } from "@/pages/EndDeviceDefinitionList"
+import { EndDeviceDefinitionDetail } from "@/pages/EndDeviceDefinitionDetail"
 import { LoginPage } from "@/pages/LoginPage"
 import { SignupPage } from "@/pages/SignupPage"
-import { AppSidebar } from "@/components/layout"
+import { AppSidebar, AppHeader } from "@/components/layout"
 import { RequireAuth } from "@/components/auth"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/lib/auth"
-import { organizationClient, workspaceClient } from "@/lib/api"
 
-function MainLayout() {
+// Main layout with header for all authenticated routes
+function AppLayout() {
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen flex-col">
+      <AppHeader />
+      <div className="flex flex-1 overflow-hidden">
+        <Outlet />
+      </div>
+    </div>
+  )
+}
+
+// Layout with sidebar for org-level routes
+function SidebarLayout() {
+  return (
+    <div className="flex flex-1">
       <AppSidebar />
-      <main className="flex-1 overflow-auto">
-        <Outlet />
-      </main>
-    </div>
-  )
-}
-
-function OrganizationLayout() {
-  const { orgId } = useParams<{ orgId: string }>()
-  const [orgName, setOrgName] = useState<string>()
-
-  useEffect(() => {
-    if (!orgId) return
-    organizationClient.getOrganization({ organizationId: orgId })
-      .then(res => setOrgName(res.organization?.name))
-      .catch(() => {})
-  }, [orgId])
-
-  return (
-    <div className="flex h-screen">
-      <AppSidebar organizationId={orgId} organizationName={orgName} />
-      <main className="flex-1 overflow-auto">
-        <Outlet />
-      </main>
-    </div>
-  )
-}
-
-function WorkspaceLayout() {
-  const { orgId, workspaceId } = useParams<{ orgId: string; workspaceId: string }>()
-  const [orgName, setOrgName] = useState<string>()
-  const [workspaceName, setWorkspaceName] = useState<string>()
-
-  useEffect(() => {
-    if (!orgId) return
-    organizationClient.getOrganization({ organizationId: orgId })
-      .then(res => setOrgName(res.organization?.name))
-      .catch(() => {})
-  }, [orgId])
-
-  useEffect(() => {
-    if (!orgId || !workspaceId) return
-    workspaceClient.getWorkspace({ workspaceId, organizationId: orgId })
-      .then(res => setWorkspaceName(res.workspace?.name))
-      .catch(() => {})
-  }, [orgId, workspaceId])
-
-  return (
-    <div className="flex h-screen">
-      <AppSidebar
-        organizationId={orgId}
-        organizationName={orgName}
-        workspaceId={workspaceId}
-        workspaceName={workspaceName}
-      />
       <main className="flex-1 overflow-auto">
         <Outlet />
       </main>
@@ -90,39 +47,29 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
 
-            {/* Protected routes */}
-            <Route
-              element={
-                <RequireAuth>
-                  <MainLayout />
-                </RequireAuth>
-              }
-            >
+            {/* Protected routes - all use AppLayout for unified header */}
+            <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
+              {/* Org list - no sidebar */}
               <Route path="/" element={<OrganizationList />} />
               <Route path="/organizations" element={<OrganizationList />} />
-            </Route>
-            <Route
-              path="/organizations/:orgId"
-              element={
-                <RequireAuth>
-                  <OrganizationLayout />
-                </RequireAuth>
-              }
-            >
-              <Route index element={<OrganizationDetail />} />
-              <Route path="gateways" element={<GatewayList />} />
-              <Route path="workspaces" element={<WorkspaceList />} />
-            </Route>
-            <Route
-              path="/organizations/:orgId/workspaces/:workspaceId"
-              element={
-                <RequireAuth>
-                  <WorkspaceLayout />
-                </RequireAuth>
-              }
-            >
-              <Route index element={<WorkspaceDetail />} />
-              <Route path="devices" element={<DeviceList />} />
+
+              {/* All org-related routes use sidebar layout */}
+              <Route element={<SidebarLayout />}>
+                {/* Org level */}
+                <Route path="/organizations/:orgId" element={<WorkspaceList />} />
+                <Route path="/organizations/:orgId/workspaces" element={<WorkspaceList />} />
+                <Route path="/organizations/:orgId/gateways" element={<GatewayList />} />
+                <Route path="/organizations/:orgId/definitions" element={<EndDeviceDefinitionList />} />
+
+                {/* Workspace detail - defaults to devices */}
+                <Route path="/organizations/:orgId/workspaces/:workspaceId" element={<DeviceList />} />
+
+                {/* Gateway detail */}
+                <Route path="/organizations/:orgId/gateways/:gatewayId" element={<GatewayDetail />} />
+
+                {/* Definition detail */}
+                <Route path="/organizations/:orgId/definitions/:definitionId" element={<EndDeviceDefinitionDetail />} />
+              </Route>
             </Route>
           </Routes>
         </BrowserRouter>

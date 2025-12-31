@@ -4,12 +4,14 @@ import { transport } from "./transport"
 import { OrganizationService } from "@buf/ponix_ponix.bufbuild_es/organization/v1/organization_pb"
 import { GatewayService } from "@buf/ponix_ponix.bufbuild_es/gateway/v1/gateway_pb"
 import { EndDeviceService } from "@buf/ponix_ponix.bufbuild_es/end_device/v1/end_device_pb"
+import { EndDeviceDefinitionService } from "@buf/ponix_ponix.bufbuild_es/end_device/v1/end_device_definition_pb"
 import { UserService } from "@buf/ponix_ponix.bufbuild_es/user/v1/user_pb"
 import { WorkspaceService } from "@buf/ponix_ponix.bufbuild_es/workspace/v1/workspace_pb"
 
 export const organizationClient = createClient(OrganizationService, transport)
 export const gatewayClient = createClient(GatewayService, transport)
 export const endDeviceClient = createClient(EndDeviceService, transport)
+export const endDeviceDefinitionClient = createClient(EndDeviceDefinitionService, transport)
 export const userClient = createClient(UserService, transport)
 export const workspaceClient = createClient(WorkspaceService, transport)
 
@@ -24,7 +26,6 @@ export type {
   DeleteOrganizationResponse,
 } from "@buf/ponix_ponix.bufbuild_es/organization/v1/organization_pb"
 
-export { OrganizationStatus } from "@buf/ponix_ponix.bufbuild_es/organization/v1/organization_pb"
 
 export type {
   Gateway,
@@ -42,7 +43,6 @@ export type {
 } from "@buf/ponix_ponix.bufbuild_es/gateway/v1/gateway_pb"
 
 export {
-  GatewayStatus,
   GatewayType,
 } from "@buf/ponix_ponix.bufbuild_es/gateway/v1/gateway_pb"
 
@@ -52,8 +52,6 @@ export type {
   CreateEndDeviceResponse,
   GetEndDeviceRequest,
   GetEndDeviceResponse,
-  ListEndDevicesRequest,
-  ListEndDevicesResponse,
 } from "@buf/ponix_ponix.bufbuild_es/end_device/v1/end_device_pb"
 
 export type {
@@ -89,9 +87,16 @@ export type {
   ListWorkspacesResponse,
 } from "@buf/ponix_ponix.bufbuild_es/workspace/v1/workspace_pb"
 
-export { WorkspaceStatus } from "@buf/ponix_ponix.bufbuild_es/workspace/v1/workspace_pb"
 
 export type {
   GetWorkspaceEndDevicesRequest,
   GetWorkspaceEndDevicesResponse,
 } from "@buf/ponix_ponix.bufbuild_es/end_device/v1/end_device_pb"
+
+export type {
+  EndDeviceDefinition,
+  CreateEndDeviceDefinitionRequest,
+  CreateEndDeviceDefinitionResponse,
+  ListEndDeviceDefinitionsRequest,
+  ListEndDeviceDefinitionsResponse,
+} from "@buf/ponix_ponix.bufbuild_es/end_device/v1/end_device_definition_pb"

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
 import { useParams, Link } from "react-router-dom"
-import { Radio, Plus, ChevronLeft, ChevronRight, Check } from "lucide-react"
+import { FileCode, Plus, ChevronLeft, ChevronRight, Check } from "lucide-react"
+import CodeMirror from "@uiw/react-codemirror"
+import { json } from "@codemirror/lang-json"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,100 +17,77 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  gatewayClient,
-  type Gateway,
-  GatewayType,
+  endDeviceDefinitionClient,
+  type EndDeviceDefinition,
 } from "@/lib/api"
 import { cn } from "@/lib/utils"
+import { useTheme } from "@/components/theme-provider"
 
-type GatewayTypeKey = "emqx"
-
-interface EmqxConfig {
-  brokerUrl: string
-  subscriptionGroup: string
-}
-
-interface NewGatewayState {
+interface NewDefinitionState {
   name: string
-  type: GatewayTypeKey | ""
-  emqxConfig: EmqxConfig
+  jsonSchema: string
+  payloadConversion: string
 }
 
-const initialGatewayState: NewGatewayState = {
+const initialDefinitionState: NewDefinitionState = {
   name: "",
-  type: "",
-  emqxConfig: { brokerUrl: "", subscriptionGroup: "" },
+  jsonSchema: "",
+  payloadConversion: "",
 }
 
 const WIZARD_STEPS = [
-  { id: 1, title: "General", description: "Name and type" },
-  { id: 2, title: "Configuration", description: "Gateway settings" },
+  { id: 1, title: "General", description: "Basic information" },
+  { id: 2, title: "JSON Schema", description: "Payload validation" },
+  { id: 3, title: "Payload Converter", description: "CEL expression" },
 ]
 
-export function GatewayList() {
+export function EndDeviceDefinitionList() {
   const { orgId } = useParams<{ orgId: string }>()
-  const [gateways, setGateways] = useState<Gateway[]>([])
+  const { resolvedTheme } = useTheme()
+  const [definitions, setDefinitions] = useState<EndDeviceDefinition[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Create modal state
   const [dialogOpen, setDialogOpen] = useState(false)
   const [creating, setCreating] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
-  const [newGateway, setNewGateway] = useState<NewGatewayState>(initialGatewayState)
+  const [newDefinition, setNewDefinition] = useState<NewDefinitionState>(initialDefinitionState)
 
-  const fetchGateways = async () => {
+  const fetchDefinitions = async () => {
     if (!orgId) return
     try {
       setLoading(true)
       setError(null)
-      const response = await gatewayClient.listGateways({ organizationId: orgId })
-      setGateways(response.gateways)
+      const response = await endDeviceDefinitionClient.listEndDeviceDefinitions({ organizationId: orgId })
+      setDefinitions(response.endDeviceDefinitions)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch gateways")
+      setError(err instanceof Error ? err.message : "Failed to fetch definitions")
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchGateways()
+    fetchDefinitions()
   }, [orgId])
 
-  const handleCreateGateway = async () => {
-    if (!orgId || !newGateway.name.trim() || !newGateway.type) return
+  const handleCreateDefinition = async () => {
+    if (!orgId || !newDefinition.name.trim()) return
 
     try {
       setCreating(true)
+      await endDeviceDefinitionClient.createEndDeviceDefinition({
+        organizationId: orgId,
+        name: newDefinition.name,
+        jsonSchema: newDefinition.jsonSchema,
+        payloadConversion: newDefinition.payloadConversion,
+      })
 
-      if (newGateway.type === "emqx") {
-        if (!newGateway.emqxConfig.brokerUrl.trim()) return
-        await gatewayClient.createGateway({
-          organizationId: orgId,
-          name: newGateway.name,
-          type: GatewayType.EMQX,
-          config: {
-            case: "emqxConfig",
-            value: {
-              brokerUrl: newGateway.emqxConfig.brokerUrl,
-              subscriptionGroup: newGateway.emqxConfig.subscriptionGroup || undefined,
-            },
-          },
-        })
-      }
-
-      setNewGateway(initialGatewayState)
+      setNewDefinition(initialDefinitionState)
       setDialogOpen(false)
-      fetchGateways()
+      fetchDefinitions()
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create gateway")
+      setError(err instanceof Error ? err.message : "Failed to create definition")
     } finally {
       setCreating(false)
     }
@@ -119,27 +97,25 @@ export function GatewayList() {
     setDialogOpen(open)
     if (!open) {
       setCurrentStep(1)
-      setNewGateway(initialGatewayState)
+      setNewDefinition(initialDefinitionState)
     }
   }
 
   const canProceedFromStep = (step: number) => {
     switch (step) {
       case 1:
-        return newGateway.name.trim().length > 0 && newGateway.type !== ""
+        return newDefinition.name.trim().length > 0
       case 2:
-        if (newGateway.type === "emqx") {
-          return newGateway.emqxConfig.brokerUrl.trim().length > 0 &&
-                 newGateway.emqxConfig.subscriptionGroup.trim().length > 0
-        }
-        return true
+        return true // JSON schema is optional
+      case 3:
+        return true // Payload conversion is optional
       default:
         return false
     }
   }
 
   const handleNext = () => {
-    if (currentStep < 2 && canProceedFromStep(currentStep)) {
+    if (currentStep < 3 && canProceedFromStep(currentStep)) {
       setCurrentStep(currentStep + 1)
     }
   }
@@ -150,13 +126,9 @@ export function GatewayList() {
     }
   }
 
-  const typeLabel = (type: GatewayType) => {
-    switch (type) {
-      case GatewayType.EMQX:
-        return "EMQX"
-      default:
-        return "Unknown"
-    }
+  const formatDate = (timestamp: { seconds: bigint } | undefined) => {
+    if (!timestamp) return "N/A"
+    return new Date(Number(timestamp.seconds) * 1000).toLocaleDateString()
   }
 
   return (
@@ -164,8 +136,8 @@ export function GatewayList() {
       <div className="border-b">
         <div className="flex h-14 items-center px-6">
           <div className="flex items-center gap-2">
-            <Radio className="h-5 w-5 text-muted-foreground" />
-            <h1 className="text-lg font-semibold">Gateways</h1>
+            <FileCode className="h-5 w-5 text-muted-foreground" />
+            <h1 className="text-lg font-semibold">Definitions</h1>
           </div>
         </div>
       </div>
@@ -175,21 +147,21 @@ export function GatewayList() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <div>
-                <CardTitle className="text-base">All Gateways</CardTitle>
+                <CardTitle className="text-base">All Definitions</CardTitle>
                 <CardDescription>
-                  IoT gateways connected to this organization
+                  End device definitions for this organization
                 </CardDescription>
               </div>
               <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Gateway
+                Add Definition
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Create Gateway</DialogTitle>
+                <DialogTitle>Create End Device Definition</DialogTitle>
                 <DialogDescription>
                   Step {currentStep} of {WIZARD_STEPS.length}: {WIZARD_STEPS[currentStep - 1].title}
                 </DialogDescription>
@@ -236,66 +208,52 @@ export function GatewayList() {
                       <Label htmlFor="name">Name</Label>
                       <Input
                         id="name"
-                        value={newGateway.name}
-                        onChange={(e) => setNewGateway({ ...newGateway, name: e.target.value })}
-                        placeholder="My Gateway"
+                        value={newDefinition.name}
+                        onChange={(e) => setNewDefinition({ ...newDefinition, name: e.target.value })}
+                        placeholder="Temperature Sensor v1"
                       />
                       <p className="text-sm text-muted-foreground">
-                        A descriptive name for this gateway.
-                      </p>
-                    </div>
-                    <div className="grid gap-2">
-                      <Label>Gateway Type</Label>
-                      <Select
-                        value={newGateway.type}
-                        onValueChange={(value: GatewayTypeKey) => setNewGateway({ ...newGateway, type: value })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a gateway type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="emqx">EMQX</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <p className="text-sm text-muted-foreground">
-                        The type of gateway determines the configuration options.
+                        A descriptive name for this device definition.
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* Step 2: Configuration */}
-                {currentStep === 2 && newGateway.type === "emqx" && (
-                  <div className="grid gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="brokerUrl">Broker URL</Label>
-                      <Input
-                        id="brokerUrl"
-                        value={newGateway.emqxConfig.brokerUrl}
-                        onChange={(e) => setNewGateway({
-                          ...newGateway,
-                          emqxConfig: { ...newGateway.emqxConfig, brokerUrl: e.target.value }
-                        })}
-                        placeholder="mqtt://broker.example.com:1883"
+                {/* Step 2: JSON Schema */}
+                {currentStep === 2 && (
+                  <div className="grid gap-2">
+                    <Label>JSON Schema</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Define the expected payload structure for validation.
+                    </p>
+                    <div className="overflow-hidden rounded-md border">
+                      <CodeMirror
+                        value={newDefinition.jsonSchema}
+                        height="200px"
+                        theme={resolvedTheme}
+                        extensions={[json()]}
+                        onChange={(value) => setNewDefinition({ ...newDefinition, jsonSchema: value })}
+                        placeholder='{"type": "object", "properties": {...}}'
                       />
-                      <p className="text-sm text-muted-foreground">
-                        The MQTT broker URL to connect to.
-                      </p>
                     </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="subscriptionGroup">Subscription Group</Label>
-                      <Input
-                        id="subscriptionGroup"
-                        value={newGateway.emqxConfig.subscriptionGroup}
-                        onChange={(e) => setNewGateway({
-                          ...newGateway,
-                          emqxConfig: { ...newGateway.emqxConfig, subscriptionGroup: e.target.value }
-                        })}
-                        placeholder="group-1"
+                  </div>
+                )}
+
+                {/* Step 3: Payload Converter */}
+                {currentStep === 3 && (
+                  <div className="grid gap-2">
+                    <Label>Payload Conversion (CEL)</Label>
+                    <p className="text-sm text-muted-foreground">
+                      CEL expression to transform raw device payloads.
+                    </p>
+                    <div className="overflow-hidden rounded-md border">
+                      <CodeMirror
+                        value={newDefinition.payloadConversion}
+                        height="200px"
+                        theme={resolvedTheme}
+                        onChange={(value) => setNewDefinition({ ...newDefinition, payloadConversion: value })}
+                        placeholder="payload.temperature * 1.8 + 32"
                       />
-                      <p className="text-sm text-muted-foreground">
-                        Subscription group for shared subscriptions.
-                      </p>
                     </div>
                   </div>
                 )}
@@ -310,7 +268,7 @@ export function GatewayList() {
                   <ChevronLeft className="mr-2 h-4 w-4" />
                   Back
                 </Button>
-                {currentStep < 2 ? (
+                {currentStep < 3 ? (
                   <Button
                     onClick={handleNext}
                     disabled={!canProceedFromStep(currentStep)}
@@ -320,10 +278,10 @@ export function GatewayList() {
                   </Button>
                 ) : (
                   <Button
-                    onClick={handleCreateGateway}
-                    disabled={creating || !canProceedFromStep(currentStep)}
+                    onClick={handleCreateDefinition}
+                    disabled={creating}
                   >
-                    {creating ? "Creating..." : "Create Gateway"}
+                    {creating ? "Creating..." : "Create Definition"}
                   </Button>
                 )}
               </DialogFooter>
@@ -333,41 +291,38 @@ export function GatewayList() {
             <CardContent>
               {loading ? (
                 <div className="py-8 text-center text-muted-foreground">
-                  Loading gateways...
+                  Loading definitions...
                 </div>
               ) : error ? (
                 <div className="rounded-md bg-destructive/10 p-4 text-destructive">
                   {error}
                 </div>
-              ) : gateways.length === 0 ? (
+              ) : definitions.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground">
-                  No gateways configured
+                  No definitions configured
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {gateways.map((gateway) => (
+                  {definitions.map((definition) => (
                     <Link
-                      key={gateway.gatewayId}
-                      to={`/organizations/${orgId}/gateways/${gateway.gatewayId}`}
+                      key={definition.id}
+                      to={`/organizations/${orgId}/definitions/${definition.id}`}
                       className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                          <Radio className="h-5 w-5 text-muted-foreground" />
+                          <FileCode className="h-5 w-5 text-muted-foreground" />
                         </div>
                         <div>
-                          <div className="font-medium">{gateway.name}</div>
+                          <div className="font-medium">{definition.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {gateway.gatewayId}
+                            {definition.id}
                           </div>
-                          {gateway.config.case === "emqxConfig" && (
-                            <div className="mt-1 text-xs text-muted-foreground">
-                              {gateway.config.value.brokerUrl}
-                            </div>
-                          )}
                         </div>
                       </div>
-                      <Badge variant="outline">{typeLabel(gateway.type)}</Badge>
+                      <div className="text-right text-xs text-muted-foreground">
+                        {formatDate(definition.createdAt)}
+                      </div>
                     </Link>
                   ))}
                 </div>

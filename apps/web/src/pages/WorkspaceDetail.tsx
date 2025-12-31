@@ -3,13 +3,11 @@ import { useParams, Link } from "react-router-dom"
 import { timestampDate, type Timestamp } from "@bufbuild/protobuf/wkt"
 import { Cpu, Layers } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import {
   workspaceClient,
   endDeviceClient,
   type Workspace,
   type EndDevice,
-  WorkspaceStatus,
 } from "@/lib/api"
 
 export function WorkspaceDetail() {
@@ -44,28 +42,6 @@ export function WorkspaceDetail() {
 
     fetchData()
   }, [orgId, workspaceId])
-
-  const statusLabel = (status: WorkspaceStatus) => {
-    switch (status) {
-      case WorkspaceStatus.ACTIVE:
-        return "Active"
-      case WorkspaceStatus.DELETED:
-        return "Deleted"
-      default:
-        return "Unknown"
-    }
-  }
-
-  const statusVariant = (status: WorkspaceStatus) => {
-    switch (status) {
-      case WorkspaceStatus.ACTIVE:
-        return "default"
-      case WorkspaceStatus.DELETED:
-        return "secondary"
-      default:
-        return "outline"
-    }
-  }
 
   const formatDate = (timestamp: Timestamp | undefined) => {
     if (!timestamp) return "—"
@@ -106,16 +82,13 @@ export function WorkspaceDetail() {
           <div className="flex items-center gap-3">
             <Layers className="h-5 w-5 text-muted-foreground" />
             <h1 className="text-lg font-semibold">{workspace.name}</h1>
-            <Badge variant={statusVariant(workspace.status)}>
-              {statusLabel(workspace.status)}
-            </Badge>
           </div>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 p-6">
-        <div className="mx-auto max-w-6xl space-y-6">
+        <div className="space-y-6">
           {/* Stats cards */}
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
