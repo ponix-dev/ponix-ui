@@ -24,6 +24,7 @@ import { Route as AuthenticatedOrganizationsOrgIdGatewaysGatewayIdRouteRouteImpo
 import { Route as AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdRouteRouteImport } from './routes/_authenticated/organizations/$orgId/definitions/$definitionId/route'
 import { Route as AuthenticatedOrganizationsOrgIdWorkspacesWorkspaceIdEndDevicesRouteImport } from './routes/_authenticated/organizations/$orgId/workspaces/$workspaceId/end-devices'
 import { Route as AuthenticatedOrganizationsOrgIdGatewaysGatewayIdOverviewRouteImport } from './routes/_authenticated/organizations/$orgId/gateways/$gatewayId/overview'
+import { Route as AuthenticatedOrganizationsOrgIdGatewaysGatewayIdEndDevicesRouteImport } from './routes/_authenticated/organizations/$orgId/gateways/$gatewayId/end-devices'
 import { Route as AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdOverviewRouteImport } from './routes/_authenticated/organizations/$orgId/definitions/$definitionId/overview'
 
 const SignupRoute = SignupRouteImport.update({
@@ -117,6 +118,13 @@ const AuthenticatedOrganizationsOrgIdGatewaysGatewayIdOverviewRoute =
     getParentRoute: () =>
       AuthenticatedOrganizationsOrgIdGatewaysGatewayIdRouteRoute,
   } as any)
+const AuthenticatedOrganizationsOrgIdGatewaysGatewayIdEndDevicesRoute =
+  AuthenticatedOrganizationsOrgIdGatewaysGatewayIdEndDevicesRouteImport.update({
+    id: '/end-devices',
+    path: '/end-devices',
+    getParentRoute: () =>
+      AuthenticatedOrganizationsOrgIdGatewaysGatewayIdRouteRoute,
+  } as any)
 const AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdOverviewRoute =
   AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdOverviewRouteImport.update(
     {
@@ -141,6 +149,7 @@ export interface FileRoutesByFullPath {
   '/organizations/$orgId/gateways': typeof AuthenticatedOrganizationsOrgIdGatewaysIndexRoute
   '/organizations/$orgId/workspaces': typeof AuthenticatedOrganizationsOrgIdWorkspacesIndexRoute
   '/organizations/$orgId/definitions/$definitionId/overview': typeof AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdOverviewRoute
+  '/organizations/$orgId/gateways/$gatewayId/end-devices': typeof AuthenticatedOrganizationsOrgIdGatewaysGatewayIdEndDevicesRoute
   '/organizations/$orgId/gateways/$gatewayId/overview': typeof AuthenticatedOrganizationsOrgIdGatewaysGatewayIdOverviewRoute
   '/organizations/$orgId/workspaces/$workspaceId/end-devices': typeof AuthenticatedOrganizationsOrgIdWorkspacesWorkspaceIdEndDevicesRoute
 }
@@ -157,6 +166,7 @@ export interface FileRoutesByTo {
   '/organizations/$orgId/gateways': typeof AuthenticatedOrganizationsOrgIdGatewaysIndexRoute
   '/organizations/$orgId/workspaces': typeof AuthenticatedOrganizationsOrgIdWorkspacesIndexRoute
   '/organizations/$orgId/definitions/$definitionId/overview': typeof AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdOverviewRoute
+  '/organizations/$orgId/gateways/$gatewayId/end-devices': typeof AuthenticatedOrganizationsOrgIdGatewaysGatewayIdEndDevicesRoute
   '/organizations/$orgId/gateways/$gatewayId/overview': typeof AuthenticatedOrganizationsOrgIdGatewaysGatewayIdOverviewRoute
   '/organizations/$orgId/workspaces/$workspaceId/end-devices': typeof AuthenticatedOrganizationsOrgIdWorkspacesWorkspaceIdEndDevicesRoute
 }
@@ -176,6 +186,7 @@ export interface FileRoutesById {
   '/_authenticated/organizations/$orgId/gateways/': typeof AuthenticatedOrganizationsOrgIdGatewaysIndexRoute
   '/_authenticated/organizations/$orgId/workspaces/': typeof AuthenticatedOrganizationsOrgIdWorkspacesIndexRoute
   '/_authenticated/organizations/$orgId/definitions/$definitionId/overview': typeof AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdOverviewRoute
+  '/_authenticated/organizations/$orgId/gateways/$gatewayId/end-devices': typeof AuthenticatedOrganizationsOrgIdGatewaysGatewayIdEndDevicesRoute
   '/_authenticated/organizations/$orgId/gateways/$gatewayId/overview': typeof AuthenticatedOrganizationsOrgIdGatewaysGatewayIdOverviewRoute
   '/_authenticated/organizations/$orgId/workspaces/$workspaceId/end-devices': typeof AuthenticatedOrganizationsOrgIdWorkspacesWorkspaceIdEndDevicesRoute
 }
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/organizations/$orgId/gateways'
     | '/organizations/$orgId/workspaces'
     | '/organizations/$orgId/definitions/$definitionId/overview'
+    | '/organizations/$orgId/gateways/$gatewayId/end-devices'
     | '/organizations/$orgId/gateways/$gatewayId/overview'
     | '/organizations/$orgId/workspaces/$workspaceId/end-devices'
   fileRoutesByTo: FileRoutesByTo
@@ -211,6 +223,7 @@ export interface FileRouteTypes {
     | '/organizations/$orgId/gateways'
     | '/organizations/$orgId/workspaces'
     | '/organizations/$orgId/definitions/$definitionId/overview'
+    | '/organizations/$orgId/gateways/$gatewayId/end-devices'
     | '/organizations/$orgId/gateways/$gatewayId/overview'
     | '/organizations/$orgId/workspaces/$workspaceId/end-devices'
   id:
@@ -229,6 +242,7 @@ export interface FileRouteTypes {
     | '/_authenticated/organizations/$orgId/gateways/'
     | '/_authenticated/organizations/$orgId/workspaces/'
     | '/_authenticated/organizations/$orgId/definitions/$definitionId/overview'
+    | '/_authenticated/organizations/$orgId/gateways/$gatewayId/end-devices'
     | '/_authenticated/organizations/$orgId/gateways/$gatewayId/overview'
     | '/_authenticated/organizations/$orgId/workspaces/$workspaceId/end-devices'
   fileRoutesById: FileRoutesById
@@ -346,6 +360,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrganizationsOrgIdGatewaysGatewayIdOverviewRouteImport
       parentRoute: typeof AuthenticatedOrganizationsOrgIdGatewaysGatewayIdRouteRoute
     }
+    '/_authenticated/organizations/$orgId/gateways/$gatewayId/end-devices': {
+      id: '/_authenticated/organizations/$orgId/gateways/$gatewayId/end-devices'
+      path: '/end-devices'
+      fullPath: '/organizations/$orgId/gateways/$gatewayId/end-devices'
+      preLoaderRoute: typeof AuthenticatedOrganizationsOrgIdGatewaysGatewayIdEndDevicesRouteImport
+      parentRoute: typeof AuthenticatedOrganizationsOrgIdGatewaysGatewayIdRouteRoute
+    }
     '/_authenticated/organizations/$orgId/definitions/$definitionId/overview': {
       id: '/_authenticated/organizations/$orgId/definitions/$definitionId/overview'
       path: '/overview'
@@ -372,11 +393,14 @@ const AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdRouteRouteWithChildr
   )
 
 interface AuthenticatedOrganizationsOrgIdGatewaysGatewayIdRouteRouteChildren {
+  AuthenticatedOrganizationsOrgIdGatewaysGatewayIdEndDevicesRoute: typeof AuthenticatedOrganizationsOrgIdGatewaysGatewayIdEndDevicesRoute
   AuthenticatedOrganizationsOrgIdGatewaysGatewayIdOverviewRoute: typeof AuthenticatedOrganizationsOrgIdGatewaysGatewayIdOverviewRoute
 }
 
 const AuthenticatedOrganizationsOrgIdGatewaysGatewayIdRouteRouteChildren: AuthenticatedOrganizationsOrgIdGatewaysGatewayIdRouteRouteChildren =
   {
+    AuthenticatedOrganizationsOrgIdGatewaysGatewayIdEndDevicesRoute:
+      AuthenticatedOrganizationsOrgIdGatewaysGatewayIdEndDevicesRoute,
     AuthenticatedOrganizationsOrgIdGatewaysGatewayIdOverviewRoute:
       AuthenticatedOrganizationsOrgIdGatewaysGatewayIdOverviewRoute,
   }

@@ -17,7 +17,10 @@ import {
 } from "@buf/ponix_ponix.connectrpc_query-es/workspace/v1/workspace-WorkspaceService_connectquery"
 
 // End device queries
-import { getWorkspaceEndDevices } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device-EndDeviceService_connectquery"
+import {
+  getWorkspaceEndDevices,
+  getGatewayEndDevices,
+} from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device-EndDeviceService_connectquery"
 
 // End device definition queries
 import {
@@ -46,6 +49,9 @@ export const workspaceQueryOptions = (transport: Transport, orgId: string, works
 // Device query options
 export const devicesQueryOptions = (transport: Transport, orgId: string, workspaceId: string) =>
   createQueryOptions(getWorkspaceEndDevices, { organizationId: orgId, workspaceId }, { transport })
+
+export const gatewayDevicesQueryOptions = (transport: Transport, orgId: string, gatewayId: string) =>
+  createQueryOptions(getGatewayEndDevices, { organizationId: orgId, gatewayId }, { transport })
 
 // Definition query options
 export const definitionsQueryOptions = (transport: Transport, orgId: string) =>

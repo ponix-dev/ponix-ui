@@ -198,10 +198,16 @@ function SidebarNav({
           </div>
           <nav className="mt-2 grid gap-1 px-2">
             <NavItem
-              to={`/organizations/${organizationId}/gateways/${gatewayId}`}
+              to={`/organizations/${organizationId}/gateways/${gatewayId}/overview`}
               icon={<Radio className="h-4 w-4" />}
               label="Overview"
-              active={location.pathname === `/organizations/${organizationId}/gateways/${gatewayId}`}
+              active={location.pathname.endsWith("/overview")}
+            />
+            <NavItem
+              to={`/organizations/${organizationId}/gateways/${gatewayId}/end-devices`}
+              icon={<Cpu className="h-4 w-4" />}
+              label="End Devices"
+              active={location.pathname.endsWith("/end-devices")}
             />
           </nav>
         </>

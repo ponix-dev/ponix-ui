@@ -32,16 +32,19 @@ import {
 import { getWorkspace } from "@buf/ponix_ponix.connectrpc_query-es/workspace/v1/workspace-WorkspaceService_connectquery"
 import { getWorkspaceEndDevices, createEndDevice } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device-EndDeviceService_connectquery"
 import { listEndDeviceDefinitions } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device_definition-EndDeviceDefinitionService_connectquery"
+import { listGateways } from "@buf/ponix_ponix.connectrpc_query-es/gateway/v1/gateway-GatewayService_connectquery"
 import { cn } from "@/lib/utils"
 import {
   workspaceQueryOptions,
   devicesQueryOptions,
   definitionsQueryOptions,
+  gatewaysQueryOptions,
 } from "@/lib/queries"
 
 const WIZARD_STEPS = [
   { id: 1, title: "General", description: "Device name" },
   { id: 2, title: "Definition", description: "Select definition" },
+  { id: 3, title: "Gateway", description: "Select gateway" },
 ]
 
 export const Route = createFileRoute("/_authenticated/organizations/$orgId/workspaces/$workspaceId/end-devices")({
@@ -56,6 +59,9 @@ export const Route = createFileRoute("/_authenticated/organizations/$orgId/works
       context.queryClient.ensureQueryData(
         definitionsQueryOptions(context.transport, params.orgId)
       ),
+      context.queryClient.ensureQueryData(
+        gatewaysQueryOptions(context.transport, params.orgId)
+      ),
     ])
   },
   component: DeviceList,
@@ -67,9 +73,11 @@ function DeviceList() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [definitionSearchOpen, setDefinitionSearchOpen] = useState(false)
+  const [gatewaySearchOpen, setGatewaySearchOpen] = useState(false)
   const [newDevice, setNewDevice] = useState({
     name: "",
     definitionId: "",
+    gatewayId: "",
   })
 
   const { data: workspaceResponse } = useSuspenseQuery(getWorkspace, { organizationId: orgId, workspaceId })
@@ -84,9 +92,12 @@ function DeviceList() {
   const { data: definitionsResponse } = useSuspenseQuery(listEndDeviceDefinitions, { organizationId: orgId })
   const definitions = definitionsResponse?.endDeviceDefinitions ?? []
 
+  const { data: gatewaysResponse } = useSuspenseQuery(listGateways, { organizationId: orgId })
+  const gateways = gatewaysResponse?.gateways ?? []
+
   const createMutation = useMutation(createEndDevice, {
     onSuccess: () => {
-      setNewDevice({ name: "", definitionId: "" })
+      setNewDevice({ name: "", definitionId: "", gatewayId: "" })
       setCurrentStep(1)
       setDialogOpen(false)
       refetchDevices()
@@ -99,7 +110,7 @@ function DeviceList() {
     setDialogOpen(open)
     if (!open) {
       setCurrentStep(1)
-      setNewDevice({ name: "", definitionId: "" })
+      setNewDevice({ name: "", definitionId: "", gatewayId: "" })
     }
   }
 
@@ -109,13 +120,15 @@ function DeviceList() {
         return newDevice.name.trim().length > 0
       case 2:
         return newDevice.definitionId !== ""
+      case 3:
+        return newDevice.gatewayId !== ""
       default:
         return false
     }
   }
 
   const handleNext = () => {
-    if (currentStep < 2 && canProceedFromStep(currentStep)) {
+    if (currentStep < 3 && canProceedFromStep(currentStep)) {
       setCurrentStep(currentStep + 1)
     }
   }
@@ -127,12 +140,13 @@ function DeviceList() {
   }
 
   const handleCreateDevice = () => {
-    if (!orgId || !workspaceId || !newDevice.name.trim() || !newDevice.definitionId) return
+    if (!orgId || !workspaceId || !newDevice.name.trim() || !newDevice.definitionId || !newDevice.gatewayId) return
     createMutation.mutate({
       organizationId: orgId,
       workspaceId,
       name: newDevice.name,
       definitionId: newDevice.definitionId,
+      gatewayId: newDevice.gatewayId,
     })
   }
 
@@ -281,6 +295,60 @@ function DeviceList() {
                         </div>
                       </div>
                     )}
+
+                    {currentStep === 3 && (
+                      <div className="grid gap-4">
+                        <div className="grid gap-2">
+                          <Label>Gateway</Label>
+                          <Popover open={gatewaySearchOpen} onOpenChange={setGatewaySearchOpen}>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={gatewaySearchOpen}
+                                className="w-full justify-between"
+                              >
+                                {newDevice.gatewayId
+                                  ? gateways.find((gw) => gw.gatewayId === newDevice.gatewayId)?.name
+                                  : "Search gateways..."}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent align="start" className="p-0" style={{ width: "var(--radix-popover-trigger-width)" }}>
+                              <Command>
+                                <CommandInput placeholder="Search gateways..." />
+                                <CommandList>
+                                  <CommandEmpty>No gateway found.</CommandEmpty>
+                                  <CommandGroup>
+                                    {gateways.map((gw) => (
+                                      <CommandItem
+                                        key={gw.gatewayId}
+                                        value={gw.name}
+                                        onSelect={() => {
+                                          setNewDevice({ ...newDevice, gatewayId: gw.gatewayId })
+                                          setGatewaySearchOpen(false)
+                                        }}
+                                      >
+                                        {gw.name}
+                                        <Check
+                                          className={cn(
+                                            "ml-auto h-4 w-4",
+                                            newDevice.gatewayId === gw.gatewayId ? "opacity-100" : "opacity-0"
+                                          )}
+                                        />
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
+                          <p className="text-sm text-muted-foreground">
+                            The gateway this device will connect through.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <DialogFooter className="flex-row justify-between sm:justify-between">
@@ -292,7 +360,7 @@ function DeviceList() {
                       <ChevronLeft className="mr-2 h-4 w-4" />
                       Back
                     </Button>
-                    {currentStep < 2 ? (
+                    {currentStep < 3 ? (
                       <Button
                         onClick={handleNext}
                         disabled={!canProceedFromStep(currentStep)}
