@@ -1,6 +1,6 @@
 import { useState } from "react"
-import { useParams, Link } from "@tanstack/react-router"
-import { useQuery, useMutation } from "@connectrpc/connect-query"
+import { createFileRoute, Link } from "@tanstack/react-router"
+import { useSuspenseQuery, useMutation } from "@connectrpc/connect-query"
 import { Layers, Plus } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -16,25 +16,25 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { listWorkspaces, createWorkspace } from "@buf/ponix_ponix.connectrpc_query-es/workspace/v1/workspace-WorkspaceService_connectquery"
+import { workspacesQueryOptions } from "@/lib/queries"
 
-export function WorkspaceList() {
-  const { orgId } = useParams({ strict: false }) as { orgId: string }
+export const Route = createFileRoute("/_authenticated/organizations/$orgId/workspaces/")({
+  loader: async ({ context, params }) => {
+    await context.queryClient.ensureQueryData(
+      workspacesQueryOptions(context.transport, params.orgId)
+    )
+  },
+  component: WorkspaceList,
+})
 
-  // Create modal state
+function WorkspaceList() {
+  const { orgId } = Route.useParams()
   const [dialogOpen, setDialogOpen] = useState(false)
   const [newWorkspaceName, setNewWorkspaceName] = useState("")
 
-  // Fetch workspaces using TanStack Query
-  const {
-    data: workspacesResponse,
-    isLoading: loading,
-    error: queryError,
-    refetch,
-  } = useQuery(listWorkspaces, { organizationId: orgId }, { enabled: !!orgId })
-
+  const { data: workspacesResponse, refetch } = useSuspenseQuery(listWorkspaces, { organizationId: orgId })
   const workspaces = workspacesResponse?.workspaces ?? []
 
-  // Create workspace mutation
   const createMutation = useMutation(createWorkspace, {
     onSuccess: () => {
       setNewWorkspaceName("")
@@ -43,7 +43,7 @@ export function WorkspaceList() {
     },
   })
 
-  const error = queryError?.message || createMutation.error?.message || null
+  const error = createMutation.error?.message || null
 
   const handleCreateWorkspace = () => {
     if (!orgId || !newWorkspaceName.trim()) return
@@ -111,11 +111,7 @@ export function WorkspaceList() {
               </Dialog>
             </CardHeader>
             <CardContent>
-              {loading ? (
-                <div className="py-8 text-center text-muted-foreground">
-                  Loading workspaces...
-                </div>
-              ) : error ? (
+              {error ? (
                 <div className="rounded-md bg-destructive/10 p-4 text-destructive">
                   {error}
                 </div>

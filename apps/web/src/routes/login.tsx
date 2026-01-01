@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate, useRouter, Link, getRouteApi } from "@tanstack/react-router"
+import { createFileRoute, useNavigate, useRouter, Link } from "@tanstack/react-router"
 import { Radio } from "lucide-react"
 import { useAuth } from "@/lib/auth"
 import { cn } from "@/lib/utils"
@@ -19,12 +19,17 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 
-const loginRoute = getRouteApi("/login")
+export const Route = createFileRoute("/login")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: (search.redirect as string) || undefined,
+  }),
+  component: LoginPage,
+})
 
 function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const navigate = useNavigate()
   const router = useRouter()
-  const { redirect } = loginRoute.useSearch()
+  const { redirect } = Route.useSearch()
   const { login } = useAuth()
 
   const [isLoading, setIsLoading] = useState(false)
@@ -43,12 +48,10 @@ function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
 
     try {
       await login(email, password)
-      // Invalidate router to refresh context with new auth state
       await router.invalidate()
       navigate({ to: from, replace: true })
     } catch (err) {
       const message = err instanceof Error ? err.message : "Login failed"
-      // Format gRPC error codes into user-friendly messages
       if (message.includes("[unauthenticated]")) {
         setError("Invalid email or password.")
       } else {
@@ -114,7 +117,7 @@ function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-export function LoginPage() {
+function LoginPage() {
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">

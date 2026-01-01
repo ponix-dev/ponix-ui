@@ -1,25 +1,25 @@
-import { useParams } from "@tanstack/react-router"
-import { useQuery } from "@connectrpc/connect-query"
+import { createFileRoute } from "@tanstack/react-router"
+import { useSuspenseQuery } from "@connectrpc/connect-query"
 import { Radio, ChevronRight } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { getGateway } from "@buf/ponix_ponix.connectrpc_query-es/gateway/v1/gateway-GatewayService_connectquery"
 import { GatewayType } from "@/lib/api"
+import { gatewayQueryOptions } from "@/lib/queries"
 
-export function GatewayDetail() {
-  const { orgId, gatewayId } = useParams({ strict: false }) as { orgId: string; gatewayId: string }
+export const Route = createFileRoute("/_authenticated/organizations/$orgId/gateways/$gatewayId/overview")({
+  loader: async ({ context, params }) => {
+    await context.queryClient.ensureQueryData(
+      gatewayQueryOptions(context.transport, params.orgId, params.gatewayId)
+    )
+  },
+  component: GatewayDetail,
+})
 
-  const {
-    data: gatewayResponse,
-    isLoading: loading,
-    error: queryError,
-  } = useQuery(
-    getGateway,
-    { organizationId: orgId, gatewayId },
-    { enabled: !!orgId && !!gatewayId }
-  )
+function GatewayDetail() {
+  const { orgId, gatewayId } = Route.useParams()
 
+  const { data: gatewayResponse } = useSuspenseQuery(getGateway, { organizationId: orgId, gatewayId })
   const gateway = gatewayResponse?.gateway ?? null
-  const error = queryError?.message ?? null
 
   const typeLabel = (type: GatewayType) => {
     switch (type) {
@@ -35,24 +35,6 @@ export function GatewayDetail() {
     return new Date(Number(timestamp.seconds) * 1000).toLocaleString()
   }
 
-  if (loading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-muted-foreground">Loading...</div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <div className="rounded-md bg-destructive/10 p-4 text-destructive">
-          {error}
-        </div>
-      </div>
-    )
-  }
-
   if (!gateway) {
     return (
       <div className="p-6">
@@ -63,7 +45,6 @@ export function GatewayDetail() {
 
   return (
     <div className="flex flex-col">
-      {/* Header */}
       <div className="border-b">
         <div className="flex h-14 items-center gap-4 px-6">
           <div className="flex items-center gap-2">
@@ -75,10 +56,8 @@ export function GatewayDetail() {
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 p-6">
         <div className="space-y-6">
-          {/* Info Cards */}
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader className="pb-2">
@@ -104,7 +83,6 @@ export function GatewayDetail() {
             </Card>
           </div>
 
-          {/* Configuration */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Configuration</CardTitle>

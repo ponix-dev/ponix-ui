@@ -1,5 +1,5 @@
-import { useParams } from "@tanstack/react-router"
-import { useQuery } from "@connectrpc/connect-query"
+import { createFileRoute } from "@tanstack/react-router"
+import { useSuspenseQuery } from "@connectrpc/connect-query"
 import { FileCode, ChevronRight } from "lucide-react"
 import CodeMirror from "@uiw/react-codemirror"
 import { json } from "@codemirror/lang-json"
@@ -7,58 +7,39 @@ import { EditorView } from "@codemirror/view"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { getEndDeviceDefinition } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device_definition-EndDeviceDefinitionService_connectquery"
 import { useTheme } from "@/components/theme-provider"
+import { definitionQueryOptions } from "@/lib/queries"
 
-export function EndDeviceDefinitionDetail() {
-  const { orgId, definitionId } = useParams({ strict: false }) as { orgId: string; definitionId: string }
+export const Route = createFileRoute("/_authenticated/organizations/$orgId/definitions/$definitionId/overview")({
+  loader: async ({ context, params }) => {
+    await context.queryClient.ensureQueryData(
+      definitionQueryOptions(context.transport, params.orgId, params.definitionId)
+    )
+  },
+  component: EndDeviceDefinitionDetail,
+})
+
+function EndDeviceDefinitionDetail() {
+  const { orgId, definitionId } = Route.useParams()
   const { resolvedTheme } = useTheme()
 
-  const {
-    data: definitionResponse,
-    isLoading: loading,
-    error: queryError,
-  } = useQuery(
-    getEndDeviceDefinition,
-    { organizationId: orgId, id: definitionId },
-    { enabled: !!orgId && !!definitionId }
-  )
-
+  const { data: definitionResponse } = useSuspenseQuery(getEndDeviceDefinition, { organizationId: orgId, id: definitionId })
   const definition = definitionResponse?.endDeviceDefinition ?? null
-  const error = queryError?.message ?? null
 
   const formatDate = (timestamp: { seconds: bigint } | undefined) => {
     if (!timestamp) return "N/A"
     return new Date(Number(timestamp.seconds) * 1000).toLocaleString()
   }
 
-  if (loading) {
+  if (!definition) {
     return (
       <div className="flex flex-col">
         <div className="border-b">
           <div className="flex h-14 items-center px-6">
-            <h1 className="text-lg font-semibold">Loading...</h1>
+            <h1 className="text-lg font-semibold">Not Found</h1>
           </div>
         </div>
         <div className="flex-1 p-6">
-          <div className="py-8 text-center text-muted-foreground">
-            Loading definition...
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (error || !definition) {
-    return (
-      <div className="flex flex-col">
-        <div className="border-b">
-          <div className="flex h-14 items-center px-6">
-            <h1 className="text-lg font-semibold">Error</h1>
-          </div>
-        </div>
-        <div className="flex-1 p-6">
-          <div className="rounded-md bg-destructive/10 p-4 text-destructive">
-            {error || "Definition not found"}
-          </div>
+          <div className="text-muted-foreground">Definition not found</div>
         </div>
       </div>
     )
@@ -79,7 +60,6 @@ export function EndDeviceDefinitionDetail() {
 
       <div className="flex-1 overflow-auto p-6">
         <div className="space-y-6">
-          {/* Info Cards */}
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader className="pb-2">
@@ -101,7 +81,6 @@ export function EndDeviceDefinitionDetail() {
             </Card>
           </div>
 
-          {/* JSON Schema */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">JSON Schema</CardTitle>
@@ -128,7 +107,6 @@ export function EndDeviceDefinitionDetail() {
             </CardContent>
           </Card>
 
-          {/* Payload Converter */}
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Payload Converter</CardTitle>

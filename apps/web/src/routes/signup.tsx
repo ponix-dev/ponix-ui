@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate, useRouter, Link, getRouteApi } from "@tanstack/react-router"
+import { createFileRoute, useNavigate, useRouter, Link } from "@tanstack/react-router"
 import { Radio } from "lucide-react"
 import { useAuth } from "@/lib/auth"
 import { cn } from "@/lib/utils"
@@ -19,12 +19,17 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 
-const signupRoute = getRouteApi("/signup")
+export const Route = createFileRoute("/signup")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: (search.redirect as string) || undefined,
+  }),
+  component: SignupPage,
+})
 
 function SignupForm({ className, ...props }: React.ComponentProps<"div">) {
   const navigate = useNavigate()
   const router = useRouter()
-  const { redirect } = signupRoute.useSearch()
+  const { redirect } = Route.useSearch()
   const { register } = useAuth()
 
   const [isLoading, setIsLoading] = useState(false)
@@ -57,12 +62,10 @@ function SignupForm({ className, ...props }: React.ComponentProps<"div">) {
 
     try {
       await register(email, password, name)
-      // Invalidate router to refresh context with new auth state
       await router.invalidate()
       navigate({ to: from, replace: true })
     } catch (err) {
       const message = err instanceof Error ? err.message : "Registration failed"
-      // Format gRPC error codes into user-friendly messages
       if (message.includes("[already_exists]")) {
         setError("An account with this email already exists. Try signing in instead.")
       } else {
@@ -158,7 +161,7 @@ function SignupForm({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-export function SignupPage() {
+function SignupPage() {
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
