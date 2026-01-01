@@ -1,26 +1,26 @@
-import { Link, useLocation, useParams } from "react-router-dom"
-import { useEffect, useState } from "react"
+import { Link, useLocation, useParams } from "@tanstack/react-router"
+import { useQuery } from "@connectrpc/connect-query"
 import { Radio, Cpu, Home, Layers, ChevronLeft, FileCode } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { OrgSwitcher } from "./OrgSwitcher"
-import {
-  organizationClient,
-  workspaceClient,
-  endDeviceDefinitionClient,
-  gatewayClient,
-} from "@/lib/api"
+import { getOrganization } from "@buf/ponix_ponix.connectrpc_query-es/organization/v1/organization-OrganizationService_connectquery"
+import { getWorkspace } from "@buf/ponix_ponix.connectrpc_query-es/workspace/v1/workspace-WorkspaceService_connectquery"
+import { getEndDeviceDefinition } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device_definition-EndDeviceDefinitionService_connectquery"
+import { getGateway } from "@buf/ponix_ponix.connectrpc_query-es/gateway/v1/gateway-GatewayService_connectquery"
 
 interface NavItemProps {
   to: string
+  params?: Record<string, string>
   icon: React.ReactNode
   label: string
   active?: boolean
 }
 
-function NavItem({ to, icon, label, active }: NavItemProps) {
+function NavItem({ to, params, icon, label, active }: NavItemProps) {
   return (
     <Link
-      to={to}
+      to={to as "/"}
+      params={params}
       className={cn(
         "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
         active
@@ -36,24 +36,18 @@ function NavItem({ to, icon, label, active }: NavItemProps) {
 
 // Sidebar header with org switcher
 function SidebarHeader({ organizationId }: { organizationId?: string }) {
-  const [orgName, setOrgName] = useState<string>()
-
-  useEffect(() => {
-    if (!organizationId) {
-      setOrgName(undefined)
-      return
-    }
-    organizationClient.getOrganization({ organizationId })
-      .then(res => setOrgName(res.organization?.name))
-      .catch(() => {})
-  }, [organizationId])
+  const { data: orgResponse } = useQuery(
+    getOrganization,
+    { organizationId: organizationId ?? "" },
+    { enabled: !!organizationId }
+  )
 
   if (!organizationId) return null
 
   return (
     <div className="border-b">
       <div className="flex h-14 items-center px-4">
-        <OrgSwitcher organizationId={organizationId} organizationName={orgName} />
+        <OrgSwitcher organizationId={organizationId} organizationName={orgResponse?.organization?.name} />
       </div>
     </div>
   )
@@ -72,39 +66,27 @@ function SidebarNav({
   gatewayId?: string
 }) {
   const location = useLocation()
-  const [workspaceName, setWorkspaceName] = useState<string>()
-  const [definitionName, setDefinitionName] = useState<string>()
-  const [gatewayName, setGatewayName] = useState<string>()
 
-  useEffect(() => {
-    if (!organizationId || !workspaceId) {
-      setWorkspaceName(undefined)
-      return
-    }
-    workspaceClient.getWorkspace({ workspaceId, organizationId })
-      .then(res => setWorkspaceName(res.workspace?.name))
-      .catch(() => {})
-  }, [organizationId, workspaceId])
+  const { data: workspaceResponse } = useQuery(
+    getWorkspace,
+    { workspaceId: workspaceId ?? "", organizationId: organizationId ?? "" },
+    { enabled: !!organizationId && !!workspaceId }
+  )
+  const workspaceName = workspaceResponse?.workspace?.name
 
-  useEffect(() => {
-    if (!organizationId || !definitionId) {
-      setDefinitionName(undefined)
-      return
-    }
-    endDeviceDefinitionClient.getEndDeviceDefinition({ id: definitionId, organizationId })
-      .then(res => setDefinitionName(res.endDeviceDefinition?.name))
-      .catch(() => {})
-  }, [organizationId, definitionId])
+  const { data: definitionResponse } = useQuery(
+    getEndDeviceDefinition,
+    { id: definitionId ?? "", organizationId: organizationId ?? "" },
+    { enabled: !!organizationId && !!definitionId }
+  )
+  const definitionName = definitionResponse?.endDeviceDefinition?.name
 
-  useEffect(() => {
-    if (!organizationId || !gatewayId) {
-      setGatewayName(undefined)
-      return
-    }
-    gatewayClient.getGateway({ gatewayId, organizationId })
-      .then(res => setGatewayName(res.gateway?.name))
-      .catch(() => {})
-  }, [organizationId, gatewayId])
+  const { data: gatewayResponse } = useQuery(
+    getGateway,
+    { gatewayId: gatewayId ?? "", organizationId: organizationId ?? "" },
+    { enabled: !!organizationId && !!gatewayId }
+  )
+  const gatewayName = gatewayResponse?.gateway?.name
 
   return (
     <div className="flex-1 overflow-auto py-4">
@@ -149,6 +131,7 @@ function SidebarNav({
         <>
           <div className="px-4">
             <Link
+              // @ts-expect-error - TanStack Router expects typed routes
               to={`/organizations/${organizationId}/workspaces`}
               className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
             >
@@ -175,6 +158,7 @@ function SidebarNav({
         <>
           <div className="px-4">
             <Link
+              // @ts-expect-error - TanStack Router expects typed routes
               to={`/organizations/${organizationId}/definitions`}
               className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
             >
@@ -201,6 +185,7 @@ function SidebarNav({
         <>
           <div className="px-4">
             <Link
+              // @ts-expect-error - TanStack Router expects typed routes
               to={`/organizations/${organizationId}/gateways`}
               className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
             >
@@ -226,12 +211,13 @@ function SidebarNav({
 }
 
 export function AppSidebar() {
-  const { orgId, workspaceId, definitionId, gatewayId } = useParams<{
-    orgId: string
-    workspaceId: string
-    definitionId: string
-    gatewayId: string
-  }>()
+  const params = useParams({ strict: false })
+  const { orgId, workspaceId, definitionId, gatewayId } = params as {
+    orgId?: string
+    workspaceId?: string
+    definitionId?: string
+    gatewayId?: string
+  }
 
   return (
     <div className="flex h-full w-64 flex-col border-r bg-background">

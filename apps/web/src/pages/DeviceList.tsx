@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useState } from "react"
+import { useParams } from "@tanstack/react-router"
+import { useQuery, useMutation } from "@connectrpc/connect-query"
 import { timestampDate, type Timestamp } from "@bufbuild/protobuf/wkt"
 import { Cpu, Plus, ChevronLeft, ChevronRight, Check, ChevronsUpDown, Layers } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -28,14 +29,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import {
-  endDeviceClient,
-  endDeviceDefinitionClient,
-  workspaceClient,
-  type EndDevice,
-  type EndDeviceDefinition,
-  type Workspace,
-} from "@/lib/api"
+import { getWorkspace } from "@buf/ponix_ponix.connectrpc_query-es/workspace/v1/workspace-WorkspaceService_connectquery"
+import { getWorkspaceEndDevices, createEndDevice } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device-EndDeviceService_connectquery"
+import { listEndDeviceDefinitions } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device_definition-EndDeviceDefinitionService_connectquery"
 import { cn } from "@/lib/utils"
 
 const WIZARD_STEPS = [
@@ -44,16 +40,10 @@ const WIZARD_STEPS = [
 ]
 
 export function DeviceList() {
-  const { orgId, workspaceId } = useParams<{ orgId: string; workspaceId: string }>()
-  const [workspace, setWorkspace] = useState<Workspace | null>(null)
-  const [devices, setDevices] = useState<EndDevice[]>([])
-  const [definitions, setDefinitions] = useState<EndDeviceDefinition[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { orgId, workspaceId } = useParams({ strict: false }) as { orgId: string; workspaceId: string }
 
   // Create modal state
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [creating, setCreating] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [definitionSearchOpen, setDefinitionSearchOpen] = useState(false)
   const [newDevice, setNewDevice] = useState({
@@ -61,40 +51,46 @@ export function DeviceList() {
     definitionId: "",
   })
 
-  const fetchData = async () => {
-    if (!orgId || !workspaceId) return
-    try {
-      setLoading(true)
-      setError(null)
-      const [workspaceResponse, devicesResponse] = await Promise.all([
-        workspaceClient.getWorkspace({ organizationId: orgId, workspaceId }),
-        endDeviceClient.getWorkspaceEndDevices({ organizationId: orgId, workspaceId }),
-      ])
-      setWorkspace(workspaceResponse.workspace ?? null)
-      setDevices(devicesResponse.endDevices)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch data")
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Fetch workspace
+  const { data: workspaceResponse } = useQuery(
+    getWorkspace,
+    { organizationId: orgId, workspaceId },
+    { enabled: !!orgId && !!workspaceId }
+  )
+  const workspace = workspaceResponse?.workspace ?? null
 
-  const fetchDefinitions = async () => {
-    if (!orgId) return
-    try {
-      const response = await endDeviceDefinitionClient.listEndDeviceDefinitions({
-        organizationId: orgId,
-      })
-      setDefinitions(response.endDeviceDefinitions)
-    } catch (err) {
-      console.error("Failed to fetch definitions:", err)
-    }
-  }
+  // Fetch devices
+  const {
+    data: devicesResponse,
+    isLoading: loading,
+    error: queryError,
+    refetch: refetchDevices,
+  } = useQuery(
+    getWorkspaceEndDevices,
+    { organizationId: orgId, workspaceId },
+    { enabled: !!orgId && !!workspaceId }
+  )
+  const devices = devicesResponse?.endDevices ?? []
 
-  useEffect(() => {
-    fetchData()
-    fetchDefinitions()
-  }, [orgId, workspaceId])
+  // Fetch definitions for combo box
+  const { data: definitionsResponse } = useQuery(
+    listEndDeviceDefinitions,
+    { organizationId: orgId },
+    { enabled: !!orgId }
+  )
+  const definitions = definitionsResponse?.endDeviceDefinitions ?? []
+
+  // Create device mutation
+  const createMutation = useMutation(createEndDevice, {
+    onSuccess: () => {
+      setNewDevice({ name: "", definitionId: "" })
+      setCurrentStep(1)
+      setDialogOpen(false)
+      refetchDevices()
+    },
+  })
+
+  const error = queryError?.message || createMutation.error?.message || null
 
   const handleDialogOpenChange = (open: boolean) => {
     setDialogOpen(open)
@@ -127,26 +123,14 @@ export function DeviceList() {
     }
   }
 
-  const handleCreateDevice = async () => {
+  const handleCreateDevice = () => {
     if (!orgId || !workspaceId || !newDevice.name.trim() || !newDevice.definitionId) return
-
-    try {
-      setCreating(true)
-      await endDeviceClient.createEndDevice({
-        organizationId: orgId,
-        workspaceId,
-        name: newDevice.name,
-        definitionId: newDevice.definitionId,
-      })
-      setNewDevice({ name: "", definitionId: "" })
-      setCurrentStep(1)
-      setDialogOpen(false)
-      fetchData()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create device")
-    } finally {
-      setCreating(false)
-    }
+    createMutation.mutate({
+      organizationId: orgId,
+      workspaceId,
+      name: newDevice.name,
+      definitionId: newDevice.definitionId,
+    })
   }
 
   const formatDate = (timestamp: Timestamp | undefined) => {
@@ -320,9 +304,9 @@ export function DeviceList() {
                 ) : (
                   <Button
                     onClick={handleCreateDevice}
-                    disabled={creating || !canProceedFromStep(currentStep)}
+                    disabled={createMutation.isPending || !canProceedFromStep(currentStep)}
                   >
-                    {creating ? "Creating..." : "Create Device"}
+                    {createMutation.isPending ? "Creating..." : "Create Device"}
                   </Button>
                 )}
               </DialogFooter>

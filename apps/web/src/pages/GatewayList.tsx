@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react"
-import { useParams, Link } from "react-router-dom"
+import { useState } from "react"
+import { useParams, Link } from "@tanstack/react-router"
+import { useQuery, useMutation } from "@connectrpc/connect-query"
 import { Radio, Plus, ChevronLeft, ChevronRight, Check } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -22,11 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  gatewayClient,
-  type Gateway,
-  GatewayType,
-} from "@/lib/api"
+import { listGateways, createGateway } from "@buf/ponix_ponix.connectrpc_query-es/gateway/v1/gateway-GatewayService_connectquery"
+import { GatewayType } from "@/lib/api"
 import { cn } from "@/lib/utils"
 
 type GatewayTypeKey = "emqx"
@@ -54,64 +52,52 @@ const WIZARD_STEPS = [
 ]
 
 export function GatewayList() {
-  const { orgId } = useParams<{ orgId: string }>()
-  const [gateways, setGateways] = useState<Gateway[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { orgId } = useParams({ strict: false }) as { orgId: string }
 
   // Create modal state
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [creating, setCreating] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [newGateway, setNewGateway] = useState<NewGatewayState>(initialGatewayState)
 
-  const fetchGateways = async () => {
-    if (!orgId) return
-    try {
-      setLoading(true)
-      setError(null)
-      const response = await gatewayClient.listGateways({ organizationId: orgId })
-      setGateways(response.gateways)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch gateways")
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Fetch gateways using TanStack Query
+  const {
+    data: gatewaysResponse,
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useQuery(listGateways, { organizationId: orgId }, { enabled: !!orgId })
 
-  useEffect(() => {
-    fetchGateways()
-  }, [orgId])
+  const gateways = gatewaysResponse?.gateways ?? []
 
-  const handleCreateGateway = async () => {
-    if (!orgId || !newGateway.name.trim() || !newGateway.type) return
-
-    try {
-      setCreating(true)
-
-      if (newGateway.type === "emqx") {
-        if (!newGateway.emqxConfig.brokerUrl.trim()) return
-        await gatewayClient.createGateway({
-          organizationId: orgId,
-          name: newGateway.name,
-          type: GatewayType.EMQX,
-          config: {
-            case: "emqxConfig",
-            value: {
-              brokerUrl: newGateway.emqxConfig.brokerUrl,
-              subscriptionGroup: newGateway.emqxConfig.subscriptionGroup || undefined,
-            },
-          },
-        })
-      }
-
+  // Create gateway mutation
+  const createMutation = useMutation(createGateway, {
+    onSuccess: () => {
       setNewGateway(initialGatewayState)
       setDialogOpen(false)
-      fetchGateways()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create gateway")
-    } finally {
-      setCreating(false)
+      setCurrentStep(1)
+      refetch()
+    },
+  })
+
+  const error = queryError?.message || createMutation.error?.message || null
+
+  const handleCreateGateway = () => {
+    if (!orgId || !newGateway.name.trim() || !newGateway.type) return
+
+    if (newGateway.type === "emqx") {
+      if (!newGateway.emqxConfig.brokerUrl.trim()) return
+      createMutation.mutate({
+        organizationId: orgId,
+        name: newGateway.name,
+        type: GatewayType.EMQX,
+        config: {
+          case: "emqxConfig",
+          value: {
+            brokerUrl: newGateway.emqxConfig.brokerUrl,
+            subscriptionGroup: newGateway.emqxConfig.subscriptionGroup || undefined,
+          },
+        },
+      })
     }
   }
 
@@ -321,9 +307,9 @@ export function GatewayList() {
                 ) : (
                   <Button
                     onClick={handleCreateGateway}
-                    disabled={creating || !canProceedFromStep(currentStep)}
+                    disabled={createMutation.isPending || !canProceedFromStep(currentStep)}
                   >
-                    {creating ? "Creating..." : "Create Gateway"}
+                    {createMutation.isPending ? "Creating..." : "Create Gateway"}
                   </Button>
                 )}
               </DialogFooter>
@@ -348,7 +334,8 @@ export function GatewayList() {
                   {gateways.map((gateway) => (
                     <Link
                       key={gateway.gatewayId}
-                      to={`/organizations/${orgId}/gateways/${gateway.gatewayId}`}
+                      to="/organizations/$orgId/gateways/$gatewayId"
+                      params={{ orgId, gatewayId: gateway.gatewayId }}
                       className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                     >
                       <div className="flex items-center gap-3">

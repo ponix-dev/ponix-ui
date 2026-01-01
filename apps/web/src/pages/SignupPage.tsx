@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate, useLocation, Link } from "react-router-dom"
+import { useNavigate, useRouter, Link, getRouteApi } from "@tanstack/react-router"
 import { Radio } from "lucide-react"
 import { useAuth } from "@/lib/auth"
 import { cn } from "@/lib/utils"
@@ -19,15 +19,18 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 
+const signupRoute = getRouteApi("/signup")
+
 function SignupForm({ className, ...props }: React.ComponentProps<"div">) {
   const navigate = useNavigate()
-  const location = useLocation()
+  const router = useRouter()
+  const { redirect } = signupRoute.useSearch()
   const { register } = useAuth()
 
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const from = (location.state as { from?: string })?.from || "/organizations"
+  const from = redirect || "/organizations"
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -54,7 +57,9 @@ function SignupForm({ className, ...props }: React.ComponentProps<"div">) {
 
     try {
       await register(email, password, name)
-      navigate(from, { replace: true })
+      // Invalidate router to refresh context with new auth state
+      await router.invalidate()
+      navigate({ to: from, replace: true })
     } catch (err) {
       const message = err instanceof Error ? err.message : "Registration failed"
       // Format gRPC error codes into user-friendly messages
@@ -140,7 +145,7 @@ function SignupForm({ className, ...props }: React.ComponentProps<"div">) {
                 </Button>
                 <FieldDescription className="text-center">
                   Already have an account?{" "}
-                  <Link to="/login" state={{ from }}>
+                  <Link to="/login" search={{ redirect: from }}>
                     Sign in
                   </Link>
                 </FieldDescription>

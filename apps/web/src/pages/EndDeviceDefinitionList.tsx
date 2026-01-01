@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react"
-import { useParams, Link } from "react-router-dom"
+import { useState } from "react"
+import { useParams, Link } from "@tanstack/react-router"
+import { useQuery, useMutation } from "@connectrpc/connect-query"
 import { FileCode, Plus, ChevronLeft, ChevronRight, Check } from "lucide-react"
 import CodeMirror from "@uiw/react-codemirror"
 import { json } from "@codemirror/lang-json"
@@ -16,10 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  endDeviceDefinitionClient,
-  type EndDeviceDefinition,
-} from "@/lib/api"
+import { listEndDeviceDefinitions, createEndDeviceDefinition } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device_definition-EndDeviceDefinitionService_connectquery"
 import { cn } from "@/lib/utils"
 import { useTheme } from "@/components/theme-provider"
 
@@ -42,55 +40,43 @@ const WIZARD_STEPS = [
 ]
 
 export function EndDeviceDefinitionList() {
-  const { orgId } = useParams<{ orgId: string }>()
+  const { orgId } = useParams({ strict: false }) as { orgId: string }
   const { resolvedTheme } = useTheme()
-  const [definitions, setDefinitions] = useState<EndDeviceDefinition[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [creating, setCreating] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [newDefinition, setNewDefinition] = useState<NewDefinitionState>(initialDefinitionState)
 
-  const fetchDefinitions = async () => {
-    if (!orgId) return
-    try {
-      setLoading(true)
-      setError(null)
-      const response = await endDeviceDefinitionClient.listEndDeviceDefinitions({ organizationId: orgId })
-      setDefinitions(response.endDeviceDefinitions)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch definitions")
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Fetch definitions using TanStack Query
+  const {
+    data: definitionsResponse,
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useQuery(listEndDeviceDefinitions, { organizationId: orgId }, { enabled: !!orgId })
 
-  useEffect(() => {
-    fetchDefinitions()
-  }, [orgId])
+  const definitions = definitionsResponse?.endDeviceDefinitions ?? []
 
-  const handleCreateDefinition = async () => {
-    if (!orgId || !newDefinition.name.trim()) return
-
-    try {
-      setCreating(true)
-      await endDeviceDefinitionClient.createEndDeviceDefinition({
-        organizationId: orgId,
-        name: newDefinition.name,
-        jsonSchema: newDefinition.jsonSchema,
-        payloadConversion: newDefinition.payloadConversion,
-      })
-
+  // Create definition mutation
+  const createMutation = useMutation(createEndDeviceDefinition, {
+    onSuccess: () => {
       setNewDefinition(initialDefinitionState)
+      setCurrentStep(1)
       setDialogOpen(false)
-      fetchDefinitions()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create definition")
-    } finally {
-      setCreating(false)
-    }
+      refetch()
+    },
+  })
+
+  const error = queryError?.message || createMutation.error?.message || null
+
+  const handleCreateDefinition = () => {
+    if (!orgId || !newDefinition.name.trim()) return
+    createMutation.mutate({
+      organizationId: orgId,
+      name: newDefinition.name,
+      jsonSchema: newDefinition.jsonSchema,
+      payloadConversion: newDefinition.payloadConversion,
+    })
   }
 
   const handleDialogOpenChange = (open: boolean) => {
@@ -279,9 +265,9 @@ export function EndDeviceDefinitionList() {
                 ) : (
                   <Button
                     onClick={handleCreateDefinition}
-                    disabled={creating}
+                    disabled={createMutation.isPending}
                   >
-                    {creating ? "Creating..." : "Create Definition"}
+                    {createMutation.isPending ? "Creating..." : "Create Definition"}
                   </Button>
                 )}
               </DialogFooter>
@@ -306,7 +292,8 @@ export function EndDeviceDefinitionList() {
                   {definitions.map((definition) => (
                     <Link
                       key={definition.id}
-                      to={`/organizations/${orgId}/definitions/${definition.id}`}
+                      to="/organizations/$orgId/definitions/$definitionId"
+                      params={{ orgId, definitionId: definition.id }}
                       className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                     >
                       <div className="flex items-center gap-3">

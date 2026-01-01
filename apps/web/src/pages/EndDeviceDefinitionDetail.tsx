@@ -1,44 +1,29 @@
-import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useParams } from "@tanstack/react-router"
+import { useQuery } from "@connectrpc/connect-query"
 import { FileCode, ChevronRight } from "lucide-react"
 import CodeMirror from "@uiw/react-codemirror"
 import { json } from "@codemirror/lang-json"
 import { EditorView } from "@codemirror/view"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import {
-  endDeviceDefinitionClient,
-  type EndDeviceDefinition,
-} from "@/lib/api"
+import { getEndDeviceDefinition } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device_definition-EndDeviceDefinitionService_connectquery"
 import { useTheme } from "@/components/theme-provider"
 
 export function EndDeviceDefinitionDetail() {
-  const { orgId, definitionId } = useParams<{ orgId: string; definitionId: string }>()
+  const { orgId, definitionId } = useParams({ strict: false }) as { orgId: string; definitionId: string }
   const { resolvedTheme } = useTheme()
-  const [definition, setDefinition] = useState<EndDeviceDefinition | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchDefinition = async () => {
-      if (!orgId || !definitionId) return
-      try {
-        setLoading(true)
-        setError(null)
-        const response = await endDeviceDefinitionClient.getEndDeviceDefinition({
-          organizationId: orgId,
-          id: definitionId,
-        })
-        setDefinition(response.endDeviceDefinition ?? null)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch definition")
-      } finally {
-        setLoading(false)
-      }
-    }
+  const {
+    data: definitionResponse,
+    isLoading: loading,
+    error: queryError,
+  } = useQuery(
+    getEndDeviceDefinition,
+    { organizationId: orgId, id: definitionId },
+    { enabled: !!orgId && !!definitionId }
+  )
 
-    fetchDefinition()
-  }, [orgId, definitionId])
+  const definition = definitionResponse?.endDeviceDefinition ?? null
+  const error = queryError?.message ?? null
 
   const formatDate = (timestamp: { seconds: bigint } | undefined) => {
     if (!timestamp) return "N/A"

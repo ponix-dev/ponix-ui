@@ -1,5 +1,6 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "@tanstack/react-router"
+import { useQuery } from "@connectrpc/connect-query"
 import { ChevronsUpDown, Check } from "lucide-react"
 import {
   DropdownMenu,
@@ -9,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
-import { organizationClient, type Organization } from "@/lib/api"
+import { userOrganizations } from "@buf/ponix_ponix.connectrpc_query-es/organization/v1/organization-OrganizationService_connectquery"
 import { useAuth } from "@/lib/auth"
 
 interface OrgSwitcherProps {
@@ -20,32 +21,23 @@ interface OrgSwitcherProps {
 export function OrgSwitcher({ organizationId, organizationName }: OrgSwitcherProps) {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const [organizations, setOrganizations] = useState<Organization[]>([])
-  const [loading, setLoading] = useState(false)
   const [open, setOpen] = useState(false)
 
-  const fetchOrganizations = async () => {
-    if (!user) return
-    try {
-      setLoading(true)
-      const response = await organizationClient.userOrganizations({ userId: user.id })
-      setOrganizations(response.organizations)
-    } catch {
-      // Silently fail - org switcher is not critical
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Fetch organizations when dropdown is open
+  const { data: orgsResponse, isLoading: loading } = useQuery(
+    userOrganizations,
+    { userId: user?.id ?? "" },
+    { enabled: !!user && open }
+  )
+
+  const organizations = orgsResponse?.organizations ?? []
 
   const handleOpenChange = (isOpen: boolean) => {
     setOpen(isOpen)
-    if (isOpen && organizations.length === 0) {
-      fetchOrganizations()
-    }
   }
 
   const handleSelectOrg = (orgId: string) => {
-    navigate(`/organizations/${orgId}`)
+    navigate({ to: `/organizations/${orgId}` })
     setOpen(false)
   }
 
@@ -90,7 +82,7 @@ export function OrgSwitcher({ organizationId, organizationName }: OrgSwitcherPro
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => navigate("/organizations")}>
+            <DropdownMenuItem onClick={() => navigate({ to: "/organizations" })}>
               All Organizations
             </DropdownMenuItem>
           </>

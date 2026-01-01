@@ -1,56 +1,40 @@
-import { useEffect, useState } from "react"
-import { Link } from "react-router-dom"
+import { useState } from "react"
+import { Link } from "@tanstack/react-router"
+import { useQuery, useMutation } from "@connectrpc/connect-query"
 import { Plus, Building2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import {
-  organizationClient,
-  type Organization,
-} from "@/lib/api"
+import { userOrganizations, createOrganization } from "@buf/ponix_ponix.connectrpc_query-es/organization/v1/organization-OrganizationService_connectquery"
 import { useAuth } from "@/lib/auth"
 
 export function OrganizationList() {
   const { user } = useAuth()
-  const [organizations, setOrganizations] = useState<Organization[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  // For creating new orgs
   const [newOrgName, setNewOrgName] = useState("")
-  const [creating, setCreating] = useState(false)
 
-  const fetchOrganizations = async () => {
-    if (!user) return
-    try {
-      setLoading(true)
-      setError(null)
-      const response = await organizationClient.userOrganizations({ userId: user.id })
-      setOrganizations(response.organizations)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch organizations")
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Fetch organizations using TanStack Query
+  const {
+    data: orgsResponse,
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useQuery(userOrganizations, { userId: user?.id ?? "" }, { enabled: !!user })
 
-  useEffect(() => {
-    fetchOrganizations()
-  }, [user])
+  const organizations = orgsResponse?.organizations ?? []
 
-  const handleCreateOrg = async () => {
-    if (!newOrgName.trim()) return
-
-    try {
-      setCreating(true)
-      await organizationClient.createOrganization({ name: newOrgName })
+  // Create organization mutation
+  const createMutation = useMutation(createOrganization, {
+    onSuccess: () => {
       setNewOrgName("")
-      fetchOrganizations()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create organization")
-    } finally {
-      setCreating(false)
-    }
+      refetch()
+    },
+  })
+
+  const error = queryError?.message || createMutation.error?.message || null
+
+  const handleCreateOrg = () => {
+    if (!newOrgName.trim()) return
+    createMutation.mutate({ name: newOrgName })
   }
 
   return (
@@ -73,9 +57,9 @@ export function OrganizationList() {
                   placeholder="Organization name"
                   className="max-w-sm"
                 />
-                <Button onClick={handleCreateOrg} disabled={creating || !newOrgName.trim()}>
+                <Button onClick={handleCreateOrg} disabled={createMutation.isPending || !newOrgName.trim()}>
                   <Plus className="mr-2 h-4 w-4" />
-                  {creating ? "Creating..." : "Create"}
+                  {createMutation.isPending ? "Creating..." : "Create"}
                 </Button>
               </div>
             </CardContent>
@@ -109,7 +93,8 @@ export function OrganizationList() {
                   {organizations.map((org) => (
                     <Link
                       key={org.id}
-                      to={`/organizations/${org.id}`}
+                      to="/organizations/$orgId"
+                      params={{ orgId: org.id }}
                       className="flex items-center rounded-lg border p-4 transition-colors hover:bg-muted/50"
                     >
                       <div className="flex items-center gap-3">

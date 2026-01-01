@@ -1,40 +1,25 @@
-import { useEffect, useState } from "react"
-import { useParams } from "react-router-dom"
+import { useParams } from "@tanstack/react-router"
+import { useQuery } from "@connectrpc/connect-query"
 import { Radio, ChevronRight } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import {
-  gatewayClient,
-  type Gateway,
-  GatewayType,
-} from "@/lib/api"
+import { getGateway } from "@buf/ponix_ponix.connectrpc_query-es/gateway/v1/gateway-GatewayService_connectquery"
+import { GatewayType } from "@/lib/api"
 
 export function GatewayDetail() {
-  const { orgId, gatewayId } = useParams<{ orgId: string; gatewayId: string }>()
-  const [gateway, setGateway] = useState<Gateway | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { orgId, gatewayId } = useParams({ strict: false }) as { orgId: string; gatewayId: string }
 
-  useEffect(() => {
-    const fetchGateway = async () => {
-      if (!orgId || !gatewayId) return
-      try {
-        setLoading(true)
-        setError(null)
-        const response = await gatewayClient.getGateway({
-          organizationId: orgId,
-          gatewayId,
-        })
-        setGateway(response.gateway ?? null)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch gateway")
-      } finally {
-        setLoading(false)
-      }
-    }
+  const {
+    data: gatewayResponse,
+    isLoading: loading,
+    error: queryError,
+  } = useQuery(
+    getGateway,
+    { organizationId: orgId, gatewayId },
+    { enabled: !!orgId && !!gatewayId }
+  )
 
-    fetchGateway()
-  }, [orgId, gatewayId])
+  const gateway = gatewayResponse?.gateway ?? null
+  const error = queryError?.message ?? null
 
   const typeLabel = (type: GatewayType) => {
     switch (type) {

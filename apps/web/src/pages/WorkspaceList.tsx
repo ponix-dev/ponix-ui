@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react"
-import { useParams, Link } from "react-router-dom"
+import { useState } from "react"
+import { useParams, Link } from "@tanstack/react-router"
+import { useQuery, useMutation } from "@connectrpc/connect-query"
 import { Layers, Plus } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -14,57 +15,42 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  workspaceClient,
-  type Workspace,
-} from "@/lib/api"
+import { listWorkspaces, createWorkspace } from "@buf/ponix_ponix.connectrpc_query-es/workspace/v1/workspace-WorkspaceService_connectquery"
 
 export function WorkspaceList() {
-  const { orgId } = useParams<{ orgId: string }>()
-  const [workspaces, setWorkspaces] = useState<Workspace[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { orgId } = useParams({ strict: false }) as { orgId: string }
 
   // Create modal state
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [creating, setCreating] = useState(false)
   const [newWorkspaceName, setNewWorkspaceName] = useState("")
 
-  const fetchWorkspaces = async () => {
-    if (!orgId) return
-    try {
-      setLoading(true)
-      setError(null)
-      const response = await workspaceClient.listWorkspaces({ organizationId: orgId })
-      setWorkspaces(response.workspaces)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch workspaces")
-    } finally {
-      setLoading(false)
-    }
-  }
+  // Fetch workspaces using TanStack Query
+  const {
+    data: workspacesResponse,
+    isLoading: loading,
+    error: queryError,
+    refetch,
+  } = useQuery(listWorkspaces, { organizationId: orgId }, { enabled: !!orgId })
 
-  useEffect(() => {
-    fetchWorkspaces()
-  }, [orgId])
+  const workspaces = workspacesResponse?.workspaces ?? []
 
-  const handleCreateWorkspace = async () => {
-    if (!orgId || !newWorkspaceName.trim()) return
-
-    try {
-      setCreating(true)
-      await workspaceClient.createWorkspace({
-        organizationId: orgId,
-        name: newWorkspaceName,
-      })
+  // Create workspace mutation
+  const createMutation = useMutation(createWorkspace, {
+    onSuccess: () => {
       setNewWorkspaceName("")
       setDialogOpen(false)
-      fetchWorkspaces()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create workspace")
-    } finally {
-      setCreating(false)
-    }
+      refetch()
+    },
+  })
+
+  const error = queryError?.message || createMutation.error?.message || null
+
+  const handleCreateWorkspace = () => {
+    if (!orgId || !newWorkspaceName.trim()) return
+    createMutation.mutate({
+      organizationId: orgId,
+      name: newWorkspaceName,
+    })
   }
 
   return (
@@ -116,9 +102,9 @@ export function WorkspaceList() {
                   <DialogFooter>
                     <Button
                       onClick={handleCreateWorkspace}
-                      disabled={creating || !newWorkspaceName.trim()}
+                      disabled={createMutation.isPending || !newWorkspaceName.trim()}
                     >
-                      {creating ? "Creating..." : "Create Workspace"}
+                      {createMutation.isPending ? "Creating..." : "Create Workspace"}
                     </Button>
                   </DialogFooter>
                 </DialogContent>
@@ -142,7 +128,8 @@ export function WorkspaceList() {
                   {workspaces.map((workspace) => (
                     <Link
                       key={workspace.id}
-                      to={`/organizations/${orgId}/workspaces/${workspace.id}`}
+                      to="/organizations/$orgId/workspaces/$workspaceId"
+                      params={{ orgId, workspaceId: workspace.id }}
                       className="flex items-center rounded-lg border p-4 transition-colors hover:bg-muted/50"
                     >
                       <div className="flex items-center gap-3">
