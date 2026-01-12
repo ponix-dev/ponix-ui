@@ -32,7 +32,6 @@ type GatewayTypeKey = "emqx"
 
 interface EmqxConfig {
   brokerUrl: string
-  subscriptionGroup: string
 }
 
 interface NewGatewayState {
@@ -44,7 +43,7 @@ interface NewGatewayState {
 const initialGatewayState: NewGatewayState = {
   name: "",
   type: "",
-  emqxConfig: { brokerUrl: "", subscriptionGroup: "" },
+  emqxConfig: { brokerUrl: "" },
 }
 
 const WIZARD_STEPS = [
@@ -95,7 +94,6 @@ function GatewayList() {
           case: "emqxConfig",
           value: {
             brokerUrl: newGateway.emqxConfig.brokerUrl,
-            subscriptionGroup: newGateway.emqxConfig.subscriptionGroup || undefined,
           },
         },
       })
@@ -116,8 +114,7 @@ function GatewayList() {
         return newGateway.name.trim().length > 0 && newGateway.type !== ""
       case 2:
         if (newGateway.type === "emqx") {
-          return newGateway.emqxConfig.brokerUrl.trim().length > 0 &&
-                 newGateway.emqxConfig.subscriptionGroup.trim().length > 0
+          return newGateway.emqxConfig.brokerUrl.trim().length > 0
         }
         return true
       default:
@@ -263,21 +260,6 @@ function GatewayList() {
                           />
                           <p className="text-sm text-muted-foreground">
                             The MQTT broker URL to connect to.
-                          </p>
-                        </div>
-                        <div className="grid gap-2">
-                          <Label htmlFor="subscriptionGroup">Subscription Group</Label>
-                          <Input
-                            id="subscriptionGroup"
-                            value={newGateway.emqxConfig.subscriptionGroup}
-                            onChange={(e) => setNewGateway({
-                              ...newGateway,
-                              emqxConfig: { ...newGateway.emqxConfig, subscriptionGroup: e.target.value }
-                            })}
-                            placeholder="group-1"
-                          />
-                          <p className="text-sm text-muted-foreground">
-                            Subscription group for shared subscriptions.
                           </p>
                         </div>
                       </div>

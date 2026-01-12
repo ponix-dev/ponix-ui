@@ -99,14 +99,6 @@ function GatewayDetail() {
                       {gateway.config.value.brokerUrl}
                     </code>
                   </div>
-                  {gateway.config.value.subscriptionGroup && (
-                    <div>
-                      <div className="text-sm font-medium">Subscription Group</div>
-                      <code className="mt-1 block text-sm text-muted-foreground">
-                        {gateway.config.value.subscriptionGroup}
-                      </code>
-                    </div>
-                  )}
                 </div>
               ) : (
                 <div className="py-4 text-center text-muted-foreground">

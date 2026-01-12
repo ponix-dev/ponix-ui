@@ -12,7 +12,6 @@ export type GatewayType = "EMQX"
 
 export interface EmqxConfig {
   brokerUrl: string
-  subscriptionGroup: string
 }
 
 export interface Gateway {
