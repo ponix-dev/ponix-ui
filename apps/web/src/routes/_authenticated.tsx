@@ -25,7 +25,7 @@ function AuthenticatedLayout() {
   // Handle logout - redirect to login when auth state changes
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      navigate({ to: "/login" })
+      navigate({ to: "/login", search: { redirect: window.location.href } })
     }
   }, [isLoading, isAuthenticated, navigate])
 

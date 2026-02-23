@@ -2,12 +2,11 @@ import { useState } from "react"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useSuspenseQuery, useMutation } from "@connectrpc/connect-query"
 import { FileCode, Plus, ChevronLeft, ChevronRight, Check } from "lucide-react"
-import CodeMirror from "@uiw/react-codemirror"
-import { json } from "@codemirror/lang-json"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
@@ -19,25 +18,23 @@ import {
 } from "@/components/ui/dialog"
 import { listEndDeviceDefinitions, createEndDeviceDefinition } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device_definition-EndDeviceDefinitionService_connectquery"
 import { cn } from "@/lib/utils"
-import { useTheme } from "@/components/theme-provider"
 import { definitionsQueryOptions } from "@/lib/queries"
+import { ContractListBuilder, createEmptyContract } from "@/components/contract-list-builder"
+import type { ContractFormItem } from "@/components/contract-editor"
 
 interface NewDefinitionState {
   name: string
-  jsonSchema: string
-  payloadConversion: string
+  contracts: ContractFormItem[]
 }
 
-const initialDefinitionState: NewDefinitionState = {
+const createInitialState = (): NewDefinitionState => ({
   name: "",
-  jsonSchema: "",
-  payloadConversion: "",
-}
+  contracts: [createEmptyContract("true")],
+})
 
 const WIZARD_STEPS = [
   { id: 1, title: "General", description: "Basic information" },
-  { id: 2, title: "JSON Schema", description: "Payload validation" },
-  { id: 3, title: "Payload Converter", description: "CEL expression" },
+  { id: 2, title: "Contracts", description: "Payload contracts" },
 ]
 
 export const Route = createFileRoute("/_authenticated/organizations/$orgId/definitions/")({
@@ -51,18 +48,17 @@ export const Route = createFileRoute("/_authenticated/organizations/$orgId/defin
 
 function EndDeviceDefinitionList() {
   const { orgId } = Route.useParams()
-  const { resolvedTheme } = useTheme()
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
-  const [newDefinition, setNewDefinition] = useState<NewDefinitionState>(initialDefinitionState)
+  const [newDefinition, setNewDefinition] = useState<NewDefinitionState>(createInitialState)
 
   const { data: definitionsResponse, refetch } = useSuspenseQuery(listEndDeviceDefinitions, { organizationId: orgId })
   const definitions = definitionsResponse?.endDeviceDefinitions ?? []
 
   const createMutation = useMutation(createEndDeviceDefinition, {
     onSuccess: () => {
-      setNewDefinition(initialDefinitionState)
+      setNewDefinition(createInitialState())
       setCurrentStep(1)
       setDialogOpen(false)
       refetch()
@@ -72,20 +68,23 @@ function EndDeviceDefinitionList() {
   const error = createMutation.error?.message || null
 
   const handleCreateDefinition = () => {
-    if (!orgId || !newDefinition.name.trim()) return
+    if (!orgId || !newDefinition.name.trim() || newDefinition.contracts.length === 0) return
     createMutation.mutate({
       organizationId: orgId,
       name: newDefinition.name,
-      jsonSchema: newDefinition.jsonSchema,
-      payloadConversion: newDefinition.payloadConversion,
-    })
+      contracts: newDefinition.contracts.map(({ matchExpression, transformExpression, jsonSchema }) => ({
+        matchExpression,
+        transformExpression,
+        jsonSchema,
+      })),
+    } as any)
   }
 
   const handleDialogOpenChange = (open: boolean) => {
     setDialogOpen(open)
     if (!open) {
       setCurrentStep(1)
-      setNewDefinition(initialDefinitionState)
+      setNewDefinition(createInitialState())
     }
   }
 
@@ -94,16 +93,14 @@ function EndDeviceDefinitionList() {
       case 1:
         return newDefinition.name.trim().length > 0
       case 2:
-        return true
-      case 3:
-        return true
+        return newDefinition.contracts.length > 0
       default:
         return false
     }
   }
 
   const handleNext = () => {
-    if (currentStep < 3 && canProceedFromStep(currentStep)) {
+    if (currentStep < WIZARD_STEPS.length && canProceedFromStep(currentStep)) {
       setCurrentStep(currentStep + 1)
     }
   }
@@ -186,7 +183,7 @@ function EndDeviceDefinitionList() {
                     ))}
                   </div>
 
-                  <div className="h-[280px] py-4">
+                  <div className="max-h-[60vh] overflow-y-auto py-4">
                     {currentStep === 1 && (
                       <div className="grid gap-4">
                         <div className="grid gap-2">
@@ -206,38 +203,14 @@ function EndDeviceDefinitionList() {
 
                     {currentStep === 2 && (
                       <div className="grid gap-2">
-                        <Label>JSON Schema</Label>
+                        <Label>Payload Contracts</Label>
                         <p className="text-sm text-muted-foreground">
-                          Define the expected payload structure for validation.
+                          Define how device payloads are matched, transformed, and validated. Contracts evaluate top-to-bottom; first match wins.
                         </p>
-                        <div className="overflow-hidden rounded-md border">
-                          <CodeMirror
-                            value={newDefinition.jsonSchema}
-                            height="200px"
-                            theme={resolvedTheme}
-                            extensions={[json()]}
-                            onChange={(value) => setNewDefinition({ ...newDefinition, jsonSchema: value })}
-                            placeholder='{"type": "object", "properties": {...}}'
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {currentStep === 3 && (
-                      <div className="grid gap-2">
-                        <Label>Payload Conversion (CEL)</Label>
-                        <p className="text-sm text-muted-foreground">
-                          CEL expression to transform raw device payloads.
-                        </p>
-                        <div className="overflow-hidden rounded-md border">
-                          <CodeMirror
-                            value={newDefinition.payloadConversion}
-                            height="200px"
-                            theme={resolvedTheme}
-                            onChange={(value) => setNewDefinition({ ...newDefinition, payloadConversion: value })}
-                            placeholder="payload.temperature * 1.8 + 32"
-                          />
-                        </div>
+                        <ContractListBuilder
+                          contracts={newDefinition.contracts}
+                          onChange={(contracts) => setNewDefinition({ ...newDefinition, contracts })}
+                        />
                       </div>
                     )}
                   </div>
@@ -251,7 +224,7 @@ function EndDeviceDefinitionList() {
                       <ChevronLeft className="mr-2 h-4 w-4" />
                       Back
                     </Button>
-                    {currentStep < 3 ? (
+                    {currentStep < WIZARD_STEPS.length ? (
                       <Button
                         onClick={handleNext}
                         disabled={!canProceedFromStep(currentStep)}
@@ -262,7 +235,7 @@ function EndDeviceDefinitionList() {
                     ) : (
                       <Button
                         onClick={handleCreateDefinition}
-                        disabled={createMutation.isPending}
+                        disabled={createMutation.isPending || !canProceedFromStep(currentStep)}
                       >
                         {createMutation.isPending ? "Creating..." : "Create Definition"}
                       </Button>
@@ -294,7 +267,14 @@ function EndDeviceDefinitionList() {
                           <FileCode className="h-5 w-5 text-muted-foreground" />
                         </div>
                         <div>
-                          <div className="font-medium">{definition.name}</div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{definition.name}</span>
+                            {(definition as any).contracts?.length > 0 && (
+                              <Badge variant="secondary" className="text-xs">
+                                {(definition as any).contracts.length} contract{(definition as any).contracts.length !== 1 ? "s" : ""}
+                              </Badge>
+                            )}
+                          </div>
                           <div className="text-sm text-muted-foreground">
                             {definition.id}
                           </div>

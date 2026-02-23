@@ -5,6 +5,8 @@ import CodeMirror from "@uiw/react-codemirror"
 import { json } from "@codemirror/lang-json"
 import { EditorView } from "@codemirror/view"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Label } from "@/components/ui/label"
 import { getEndDeviceDefinition } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device_definition-EndDeviceDefinitionService_connectquery"
 import { useTheme } from "@/components/theme-provider"
 import { definitionQueryOptions } from "@/lib/queries"
@@ -25,6 +27,8 @@ function EndDeviceDefinitionDetail() {
   const { data: definitionResponse } = useSuspenseQuery(getEndDeviceDefinition, { organizationId: orgId, id: definitionId })
   const definition = definitionResponse?.endDeviceDefinition ?? null
 
+  const readOnlyExtensions = [EditorView.editable.of(false)]
+
   const formatDate = (timestamp: { seconds: bigint } | undefined) => {
     if (!timestamp) return "N/A"
     return new Date(Number(timestamp.seconds) * 1000).toLocaleString()
@@ -44,6 +48,8 @@ function EndDeviceDefinitionDetail() {
       </div>
     )
   }
+
+  const contracts = (definition as any).contracts ?? []
 
   return (
     <div className="flex flex-col">
@@ -83,52 +89,73 @@ function EndDeviceDefinitionDetail() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">JSON Schema</CardTitle>
+              <CardTitle className="text-base">Payload Contracts</CardTitle>
               <CardDescription>
-                Payload validation schema for this device type
+                Contracts evaluate top-to-bottom; first match wins
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {definition.jsonSchema ? (
-                <div className="overflow-hidden rounded-md border">
-                  <CodeMirror
-                    value={definition.jsonSchema}
-                    height="200px"
-                    theme={resolvedTheme}
-                    extensions={[json(), EditorView.editable.of(false)]}
-                    editable={false}
-                  />
+              {contracts.length === 0 ? (
+                <div className="py-4 text-center text-muted-foreground">
+                  No contracts defined
                 </div>
               ) : (
-                <div className="py-4 text-center text-muted-foreground">
-                  No JSON schema defined
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Payload Converter</CardTitle>
-              <CardDescription>
-                CEL expression for transforming device payloads
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {definition.payloadConversion ? (
-                <div className="overflow-hidden rounded-md border">
-                  <CodeMirror
-                    value={definition.payloadConversion}
-                    height="200px"
-                    theme={resolvedTheme}
-                    extensions={[EditorView.editable.of(false)]}
-                    editable={false}
-                  />
-                </div>
-              ) : (
-                <div className="py-4 text-center text-muted-foreground">
-                  No payload converter defined
-                </div>
+                <Accordion type="multiple" defaultValue={contracts.map((_: any, i: number) => `contract-${i}`)}>
+                  {contracts.map((contract: any, index: number) => (
+                    <AccordionItem key={index} value={`contract-${index}`}>
+                      <AccordionTrigger>
+                        <div className="flex items-center gap-2">
+                          <span>Contract #{index + 1}</span>
+                          {contract.matchExpression && (
+                            <span className="truncate text-xs font-normal text-muted-foreground">
+                              — {contract.matchExpression}
+                            </span>
+                          )}
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="space-y-3">
+                          <div className="grid gap-1.5">
+                            <Label className="text-xs">Match Expression (CEL)</Label>
+                            <div className="overflow-hidden rounded-md border">
+                              <CodeMirror
+                                value={contract.matchExpression || ""}
+                                height="60px"
+                                theme={resolvedTheme}
+                                extensions={readOnlyExtensions}
+                                editable={false}
+                              />
+                            </div>
+                          </div>
+                          <div className="grid gap-1.5">
+                            <Label className="text-xs">Transform Expression (CEL)</Label>
+                            <div className="overflow-hidden rounded-md border">
+                              <CodeMirror
+                                value={contract.transformExpression || ""}
+                                height="100px"
+                                theme={resolvedTheme}
+                                extensions={readOnlyExtensions}
+                                editable={false}
+                              />
+                            </div>
+                          </div>
+                          <div className="grid gap-1.5">
+                            <Label className="text-xs">JSON Schema</Label>
+                            <div className="overflow-hidden rounded-md border">
+                              <CodeMirror
+                                value={contract.jsonSchema || ""}
+                                height="120px"
+                                theme={resolvedTheme}
+                                extensions={[json(), ...readOnlyExtensions]}
+                                editable={false}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
               )}
             </CardContent>
           </Card>
