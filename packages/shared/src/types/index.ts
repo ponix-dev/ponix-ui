@@ -25,11 +25,17 @@ export interface Gateway {
 }
 
 // End Device types
+export interface PayloadContract {
+  matchExpression: string
+  transformExpression: string
+  jsonSchema: string
+}
+
 export interface EndDevice {
   id: string
   organizationId: string
   name: string
-  payloadConversion: string
+  contracts: PayloadContract[]
   createdAt: Date
   updatedAt: Date
 }
