@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_authenticated")({
       throw redirect({
         to: "/login",
         search: {
-          redirect: location.href,
+          redirect: location.pathname,
         },
       })
     }
@@ -25,7 +25,7 @@ function AuthenticatedLayout() {
   // Handle logout - redirect to login when auth state changes
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      navigate({ to: "/login", search: { redirect: window.location.href } })
+      navigate({ to: "/login", search: { redirect: window.location.pathname } })
     }
   }, [isLoading, isAuthenticated, navigate])
 

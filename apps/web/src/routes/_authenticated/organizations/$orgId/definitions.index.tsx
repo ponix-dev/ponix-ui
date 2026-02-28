@@ -16,7 +16,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { create } from "@bufbuild/protobuf"
 import { listEndDeviceDefinitions, createEndDeviceDefinition } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device_definition-EndDeviceDefinitionService_connectquery"
+import { PayloadContractSchema } from "@buf/ponix_ponix.bufbuild_es/end_device/v1/end_device_definition_pb"
 import { cn } from "@/lib/utils"
 import { definitionsQueryOptions } from "@/lib/queries"
 import { ContractListBuilder, createEmptyContract } from "@/components/contract-list-builder"
@@ -72,12 +74,10 @@ function EndDeviceDefinitionList() {
     createMutation.mutate({
       organizationId: orgId,
       name: newDefinition.name,
-      contracts: newDefinition.contracts.map(({ matchExpression, transformExpression, jsonSchema }) => ({
-        matchExpression,
-        transformExpression,
-        jsonSchema,
-      })),
-    } as any)
+      contracts: newDefinition.contracts.map(({ matchExpression, transformExpression, jsonSchema }) =>
+        create(PayloadContractSchema, { matchExpression, transformExpression, jsonSchema })
+      ),
+    })
   }
 
   const handleDialogOpenChange = (open: boolean) => {
@@ -269,9 +269,9 @@ function EndDeviceDefinitionList() {
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{definition.name}</span>
-                            {(definition as any).contracts?.length > 0 && (
+                            {definition.contracts?.length > 0 && (
                               <Badge variant="secondary" className="text-xs">
-                                {(definition as any).contracts.length} contract{(definition as any).contracts.length !== 1 ? "s" : ""}
+                                {definition.contracts.length} contract{definition.contracts.length !== 1 ? "s" : ""}
                               </Badge>
                             )}
                           </div>

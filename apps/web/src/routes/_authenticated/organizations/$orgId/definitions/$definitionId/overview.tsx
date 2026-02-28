@@ -49,7 +49,7 @@ function EndDeviceDefinitionDetail() {
     )
   }
 
-  const contracts = (definition as any).contracts ?? []
+  const contracts = definition.contracts ?? []
 
   return (
     <div className="flex flex-col">
@@ -100,8 +100,8 @@ function EndDeviceDefinitionDetail() {
                   No contracts defined
                 </div>
               ) : (
-                <Accordion type="multiple" defaultValue={contracts.map((_: any, i: number) => `contract-${i}`)}>
-                  {contracts.map((contract: any, index: number) => (
+                <Accordion type="multiple" defaultValue={contracts.map((_, i) => `contract-${i}`)}>
+                  {contracts.map((contract, index) => (
                     <AccordionItem key={index} value={`contract-${index}`}>
                       <AccordionTrigger>
                         <div className="flex items-center gap-2">

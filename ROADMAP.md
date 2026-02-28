@@ -9,7 +9,7 @@ This roadmap mirrors the [ponix-rs backend roadmap](../ponix-rs/ROADMAP.md), cov
 Harden the existing entity management UI and align with backend payload contract changes.
 
 - [x] #3 — Update EndDeviceDefinition UI for multi-protocol payload contracts
-- [ ] #4 — Add Playwright E2E testing infrastructure
+- [x] #4 — Add Playwright E2E testing infrastructure
 - [ ] #5 — Gateway config form updates for deployer abstraction
 
 ## Phase 2 — Knowledge Layer UI
