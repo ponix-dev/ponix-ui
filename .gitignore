@@ -37,3 +37,8 @@ Thumbs.db
 !.vscode/settings.json
 
 /.thoughts
+
+# Playwright
+playwright-report/
+test-results/
+.playwright/

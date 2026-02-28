@@ -10,6 +10,11 @@ import { queryClient } from '@/lib/query'
 import { routeTree } from './routeTree.gen'
 import './index.css'
 
+// Expose test state for Playwright E2E tests
+if (import.meta.env.DEV) {
+  ;(window as any).__PONIX_TEST_STATE__ = { queryClient }
+}
+
 // Create router instance with file-based route tree
 const router = createRouter({
   routeTree,

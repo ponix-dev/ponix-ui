@@ -13,9 +13,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@buf/ponix_ponix.bufbuild_es": "2.10.2-20251231191145-619dd782bf4a.1",
-    "@buf/ponix_ponix.connectrpc_es": "^1.6.1-20251208040237-c375efd56625.2",
-    "@buf/ponix_ponix.connectrpc_query-es": "2.2.0-20251231191145-619dd782bf4a.1",
+    "@buf/ponix_ponix.bufbuild_es": "2.11.0-20260222230759-321a9c11336c.1",
+    "@buf/ponix_ponix.connectrpc_es": "1.6.1-20260222230759-321a9c11336c.2",
+    "@buf/ponix_ponix.connectrpc_query-es": "2.2.0-20260222230759-321a9c11336c.1",
     "@bufbuild/protobuf": "^2.10.1",
     "@connectrpc/connect": "^2.1.1",
     "@connectrpc/connect-query": "^2.2.0",
