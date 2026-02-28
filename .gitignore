@@ -42,3 +42,4 @@ Thumbs.db
 playwright-report/
 test-results/
 .playwright/
+/handoff.md
