@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Ponix UI is a web interface for the Ponix IoT platform, managing organizations, gateways, and end devices. It communicates with a Rust backend (`../ponix-rs`) via gRPC-Web.
+Ponix UI is a web interface for the Ponix IoT platform, managing organizations, gateways, and data streams. It communicates with a Rust backend (`../ponix-rs`) via gRPC-Web.
 
 ## Commands
 
@@ -61,7 +61,7 @@ import { cn } from "@/lib/utils"
 Domain types in `packages/shared/src/types/index.ts`:
 - `Organization` - Multi-tenant organization entity
 - `Gateway` - IoT gateway configuration (EMQX type)
-- `EndDevice` - End device with CEL payload conversion
+- `DataStream` - Data stream with CEL payload conversion
 
 Import with: `import { Organization } from "@ponix/shared"`
 

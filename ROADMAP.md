@@ -8,8 +8,9 @@ This roadmap mirrors the [ponix-rs backend roadmap](../ponix-rs/ROADMAP.md), cov
 
 Harden the existing entity management UI and align with backend payload contract changes.
 
-- [x] #3 — Update EndDeviceDefinition UI for multi-protocol payload contracts
+- [x] #3 — Update DataStreamDefinition UI for multi-protocol payload contracts
 - [x] #4 — Add Playwright E2E testing infrastructure
+- [x] #22 — Rename End Device to Data Stream across UI
 - [ ] #5 — Gateway config form updates for deployer abstraction
 
 ## Phase 2 — Knowledge Layer UI
@@ -17,7 +18,7 @@ Harden the existing entity management UI and align with backend payload contract
 Surface the backend's document and knowledge management capabilities.
 
 - [ ] #6 — Document management page
-- [ ] #7 — Document attachment on end device detail
+- [ ] #7 — Document attachment on data stream detail
 - [ ] #8 — Entity relationship management UI
 - [ ] #9 — Document upload integration
 
@@ -25,7 +26,7 @@ Surface the backend's document and knowledge management capabilities.
 
 Enable sending commands to devices and tracking their lifecycle.
 
-- [ ] #10 — Downlink command form on device detail
+- [ ] #10 — Downlink command form on data stream detail
 - [ ] #11 — Command history view with lifecycle status
 
 ## Phase 4 — Workspace MCP & Agent Config UI
@@ -47,7 +48,7 @@ CRUD, trigger configuration, and observability for automated workflows.
 
 Specialized UI for LoRaWAN device onboarding and downlink configuration.
 
-- [ ] #17 — ChirpStack end device definition wizard
+- [ ] #17 — ChirpStack data stream definition wizard
 - [ ] #18 — LoRaWAN downlink configuration UI
 
 ---

@@ -30,31 +30,31 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover"
 import { getWorkspace } from "@buf/ponix_ponix.connectrpc_query-es/workspace/v1/workspace-WorkspaceService_connectquery"
-import { getWorkspaceEndDevices, createEndDevice } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device-EndDeviceService_connectquery"
-import { listEndDeviceDefinitions } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device_definition-EndDeviceDefinitionService_connectquery"
+import { getWorkspaceDataStreams, createDataStream } from "@buf/ponix_ponix.connectrpc_query-es/data_stream/v1/data_stream-DataStreamService_connectquery"
+import { listDataStreamDefinitions } from "@buf/ponix_ponix.connectrpc_query-es/data_stream/v1/data_stream_definition-DataStreamDefinitionService_connectquery"
 import { listGateways } from "@buf/ponix_ponix.connectrpc_query-es/gateway/v1/gateway-GatewayService_connectquery"
 import { cn } from "@/lib/utils"
 import {
   workspaceQueryOptions,
-  devicesQueryOptions,
+  dataStreamsQueryOptions,
   definitionsQueryOptions,
   gatewaysQueryOptions,
 } from "@/lib/queries"
 
 const WIZARD_STEPS = [
-  { id: 1, title: "General", description: "Device name" },
+  { id: 1, title: "General", description: "Data stream name" },
   { id: 2, title: "Definition", description: "Select definition" },
   { id: 3, title: "Gateway", description: "Select gateway" },
 ]
 
-export const Route = createFileRoute("/_authenticated/organizations/$orgId/workspaces/$workspaceId/end-devices")({
+export const Route = createFileRoute("/_authenticated/organizations/$orgId/workspaces/$workspaceId/data-streams")({
   loader: async ({ context, params }) => {
     await Promise.all([
       context.queryClient.ensureQueryData(
         workspaceQueryOptions(context.transport, params.orgId, params.workspaceId)
       ),
       context.queryClient.ensureQueryData(
-        devicesQueryOptions(context.transport, params.orgId, params.workspaceId)
+        dataStreamsQueryOptions(context.transport, params.orgId, params.workspaceId)
       ),
       context.queryClient.ensureQueryData(
         definitionsQueryOptions(context.transport, params.orgId)
@@ -64,17 +64,17 @@ export const Route = createFileRoute("/_authenticated/organizations/$orgId/works
       ),
     ])
   },
-  component: DeviceList,
+  component: DataStreamList,
 })
 
-function DeviceList() {
+function DataStreamList() {
   const { orgId, workspaceId } = Route.useParams()
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [definitionSearchOpen, setDefinitionSearchOpen] = useState(false)
   const [gatewaySearchOpen, setGatewaySearchOpen] = useState(false)
-  const [newDevice, setNewDevice] = useState({
+  const [newDataStream, setNewDataStream] = useState({
     name: "",
     definitionId: "",
     gatewayId: "",
@@ -83,24 +83,24 @@ function DeviceList() {
   const { data: workspaceResponse } = useSuspenseQuery(getWorkspace, { organizationId: orgId, workspaceId })
   const workspace = workspaceResponse?.workspace ?? null
 
-  const { data: devicesResponse, refetch: refetchDevices } = useSuspenseQuery(
-    getWorkspaceEndDevices,
+  const { data: dataStreamsResponse, refetch: refetchDataStreams } = useSuspenseQuery(
+    getWorkspaceDataStreams,
     { organizationId: orgId, workspaceId }
   )
-  const devices = devicesResponse?.endDevices ?? []
+  const dataStreams = dataStreamsResponse?.dataStreams ?? []
 
-  const { data: definitionsResponse } = useSuspenseQuery(listEndDeviceDefinitions, { organizationId: orgId })
-  const definitions = definitionsResponse?.endDeviceDefinitions ?? []
+  const { data: definitionsResponse } = useSuspenseQuery(listDataStreamDefinitions, { organizationId: orgId })
+  const definitions = definitionsResponse?.dataStreamDefinitions ?? []
 
   const { data: gatewaysResponse } = useSuspenseQuery(listGateways, { organizationId: orgId })
   const gateways = gatewaysResponse?.gateways ?? []
 
-  const createMutation = useMutation(createEndDevice, {
+  const createMutation = useMutation(createDataStream, {
     onSuccess: () => {
-      setNewDevice({ name: "", definitionId: "", gatewayId: "" })
+      setNewDataStream({ name: "", definitionId: "", gatewayId: "" })
       setCurrentStep(1)
       setDialogOpen(false)
-      refetchDevices()
+      refetchDataStreams()
     },
   })
 
@@ -110,18 +110,18 @@ function DeviceList() {
     setDialogOpen(open)
     if (!open) {
       setCurrentStep(1)
-      setNewDevice({ name: "", definitionId: "", gatewayId: "" })
+      setNewDataStream({ name: "", definitionId: "", gatewayId: "" })
     }
   }
 
   const canProceedFromStep = (step: number) => {
     switch (step) {
       case 1:
-        return newDevice.name.trim().length > 0
+        return newDataStream.name.trim().length > 0
       case 2:
-        return newDevice.definitionId !== ""
+        return newDataStream.definitionId !== ""
       case 3:
-        return newDevice.gatewayId !== ""
+        return newDataStream.gatewayId !== ""
       default:
         return false
     }
@@ -139,14 +139,14 @@ function DeviceList() {
     }
   }
 
-  const handleCreateDevice = () => {
-    if (!orgId || !workspaceId || !newDevice.name.trim() || !newDevice.definitionId || !newDevice.gatewayId) return
+  const handleCreateDataStream = () => {
+    if (!orgId || !workspaceId || !newDataStream.name.trim() || !newDataStream.definitionId || !newDataStream.gatewayId) return
     createMutation.mutate({
       organizationId: orgId,
       workspaceId,
-      name: newDevice.name,
-      definitionId: newDevice.definitionId,
-      gatewayId: newDevice.gatewayId,
+      name: newDataStream.name,
+      definitionId: newDataStream.definitionId,
+      gatewayId: newDataStream.gatewayId,
     })
   }
 
@@ -163,7 +163,7 @@ function DeviceList() {
             <Layers className="h-5 w-5 text-muted-foreground" />
             <h1 className="text-lg font-semibold">{workspace?.name ?? "Workspace"}</h1>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            <span className="text-lg text-muted-foreground">End Devices</span>
+            <span className="text-lg text-muted-foreground">Data Streams</span>
           </div>
         </div>
       </div>
@@ -173,21 +173,21 @@ function DeviceList() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <div>
-                <CardTitle className="text-base">All Devices</CardTitle>
+                <CardTitle className="text-base">All Data Streams</CardTitle>
                 <CardDescription>
-                  Devices registered to this workspace
+                  Data streams registered to this workspace
                 </CardDescription>
               </div>
               <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
                 <DialogTrigger asChild>
                   <Button>
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Device
+                    Add Data Stream
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
-                    <DialogTitle>Create End Device</DialogTitle>
+                    <DialogTitle>Create Data Stream</DialogTitle>
                     <DialogDescription>
                       Step {currentStep} of {WIZARD_STEPS.length}: {WIZARD_STEPS[currentStep - 1].title}
                     </DialogDescription>
@@ -231,12 +231,12 @@ function DeviceList() {
                           <Label htmlFor="name">Name</Label>
                           <Input
                             id="name"
-                            value={newDevice.name}
-                            onChange={(e) => setNewDevice({ ...newDevice, name: e.target.value })}
-                            placeholder="My Device"
+                            value={newDataStream.name}
+                            onChange={(e) => setNewDataStream({ ...newDataStream, name: e.target.value })}
+                            placeholder="My Data Stream"
                           />
                           <p className="text-sm text-muted-foreground">
-                            A descriptive name for this device.
+                            A descriptive name for this data stream.
                           </p>
                         </div>
                       </div>
@@ -254,8 +254,8 @@ function DeviceList() {
                                 aria-expanded={definitionSearchOpen}
                                 className="w-full justify-between"
                               >
-                                {newDevice.definitionId
-                                  ? definitions.find((def) => def.id === newDevice.definitionId)?.name
+                                {newDataStream.definitionId
+                                  ? definitions.find((def) => def.id === newDataStream.definitionId)?.name
                                   : "Search definitions..."}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
@@ -271,7 +271,7 @@ function DeviceList() {
                                         key={def.id}
                                         value={def.name}
                                         onSelect={() => {
-                                          setNewDevice({ ...newDevice, definitionId: def.id })
+                                          setNewDataStream({ ...newDataStream, definitionId: def.id })
                                           setDefinitionSearchOpen(false)
                                         }}
                                       >
@@ -279,7 +279,7 @@ function DeviceList() {
                                         <Check
                                           className={cn(
                                             "ml-auto h-4 w-4",
-                                            newDevice.definitionId === def.id ? "opacity-100" : "opacity-0"
+                                            newDataStream.definitionId === def.id ? "opacity-100" : "opacity-0"
                                           )}
                                         />
                                       </CommandItem>
@@ -308,8 +308,8 @@ function DeviceList() {
                                 aria-expanded={gatewaySearchOpen}
                                 className="w-full justify-between"
                               >
-                                {newDevice.gatewayId
-                                  ? gateways.find((gw) => gw.gatewayId === newDevice.gatewayId)?.name
+                                {newDataStream.gatewayId
+                                  ? gateways.find((gw) => gw.gatewayId === newDataStream.gatewayId)?.name
                                   : "Search gateways..."}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
@@ -325,7 +325,7 @@ function DeviceList() {
                                         key={gw.gatewayId}
                                         value={gw.name}
                                         onSelect={() => {
-                                          setNewDevice({ ...newDevice, gatewayId: gw.gatewayId })
+                                          setNewDataStream({ ...newDataStream, gatewayId: gw.gatewayId })
                                           setGatewaySearchOpen(false)
                                         }}
                                       >
@@ -333,7 +333,7 @@ function DeviceList() {
                                         <Check
                                           className={cn(
                                             "ml-auto h-4 w-4",
-                                            newDevice.gatewayId === gw.gatewayId ? "opacity-100" : "opacity-0"
+                                            newDataStream.gatewayId === gw.gatewayId ? "opacity-100" : "opacity-0"
                                           )}
                                         />
                                       </CommandItem>
@@ -344,7 +344,7 @@ function DeviceList() {
                             </PopoverContent>
                           </Popover>
                           <p className="text-sm text-muted-foreground">
-                            The gateway this device will connect through.
+                            The gateway this data stream will connect through.
                           </p>
                         </div>
                       </div>
@@ -370,10 +370,10 @@ function DeviceList() {
                       </Button>
                     ) : (
                       <Button
-                        onClick={handleCreateDevice}
+                        onClick={handleCreateDataStream}
                         disabled={createMutation.isPending || !canProceedFromStep(currentStep)}
                       >
-                        {createMutation.isPending ? "Creating..." : "Create Device"}
+                        {createMutation.isPending ? "Creating..." : "Create Data Stream"}
                       </Button>
                     )}
                   </DialogFooter>
@@ -385,15 +385,15 @@ function DeviceList() {
                 <div className="rounded-md bg-destructive/10 p-4 text-destructive">
                   {error}
                 </div>
-              ) : devices.length === 0 ? (
+              ) : dataStreams.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground">
-                  No devices registered
+                  No data streams registered
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {devices.map((device) => (
+                  {dataStreams.map((dataStream) => (
                     <div
-                      key={device.deviceId}
+                      key={dataStream.dataStreamId}
                       className="flex items-center justify-between rounded-lg border p-4"
                     >
                       <div className="flex items-center gap-3">
@@ -401,14 +401,14 @@ function DeviceList() {
                           <Cpu className="h-5 w-5 text-muted-foreground" />
                         </div>
                         <div>
-                          <div className="font-medium">{device.name}</div>
+                          <div className="font-medium">{dataStream.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {device.deviceId}
+                            {dataStream.dataStreamId}
                           </div>
                         </div>
                       </div>
                       <div className="text-right text-xs text-muted-foreground">
-                        {formatDate(device.createdAt)}
+                        {formatDate(dataStream.createdAt)}
                       </div>
                     </div>
                   ))}

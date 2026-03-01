@@ -7,7 +7,7 @@ import { EditorView } from "@codemirror/view"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Label } from "@/components/ui/label"
-import { getEndDeviceDefinition } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device_definition-EndDeviceDefinitionService_connectquery"
+import { getDataStreamDefinition } from "@buf/ponix_ponix.connectrpc_query-es/data_stream/v1/data_stream_definition-DataStreamDefinitionService_connectquery"
 import { useTheme } from "@/components/theme-provider"
 import { definitionQueryOptions } from "@/lib/queries"
 
@@ -17,15 +17,15 @@ export const Route = createFileRoute("/_authenticated/organizations/$orgId/defin
       definitionQueryOptions(context.transport, params.orgId, params.definitionId)
     )
   },
-  component: EndDeviceDefinitionDetail,
+  component: DataStreamDefinitionDetail,
 })
 
-function EndDeviceDefinitionDetail() {
+function DataStreamDefinitionDetail() {
   const { orgId, definitionId } = Route.useParams()
   const { resolvedTheme } = useTheme()
 
-  const { data: definitionResponse } = useSuspenseQuery(getEndDeviceDefinition, { organizationId: orgId, id: definitionId })
-  const definition = definitionResponse?.endDeviceDefinition ?? null
+  const { data: definitionResponse } = useSuspenseQuery(getDataStreamDefinition, { organizationId: orgId, id: definitionId })
+  const definition = definitionResponse?.dataStreamDefinition ?? null
 
   const readOnlyExtensions = [EditorView.editable.of(false)]
 

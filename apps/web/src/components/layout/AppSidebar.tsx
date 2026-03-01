@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils"
 import { OrgSwitcher } from "./OrgSwitcher"
 import { getOrganization } from "@buf/ponix_ponix.connectrpc_query-es/organization/v1/organization-OrganizationService_connectquery"
 import { getWorkspace } from "@buf/ponix_ponix.connectrpc_query-es/workspace/v1/workspace-WorkspaceService_connectquery"
-import { getEndDeviceDefinition } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device_definition-EndDeviceDefinitionService_connectquery"
+import { getDataStreamDefinition } from "@buf/ponix_ponix.connectrpc_query-es/data_stream/v1/data_stream_definition-DataStreamDefinitionService_connectquery"
 import { getGateway } from "@buf/ponix_ponix.connectrpc_query-es/gateway/v1/gateway-GatewayService_connectquery"
 
 interface NavItemProps {
@@ -75,11 +75,11 @@ function SidebarNav({
   const workspaceName = workspaceResponse?.workspace?.name
 
   const { data: definitionResponse } = useQuery(
-    getEndDeviceDefinition,
+    getDataStreamDefinition,
     { id: definitionId ?? "", organizationId: organizationId ?? "" },
     { enabled: !!organizationId && !!definitionId }
   )
-  const definitionName = definitionResponse?.endDeviceDefinition?.name
+  const definitionName = definitionResponse?.dataStreamDefinition?.name
 
   const { data: gatewayResponse } = useQuery(
     getGateway,
@@ -146,7 +146,7 @@ function SidebarNav({
             <NavItem
               to={`/organizations/${organizationId}/workspaces/${workspaceId}`}
               icon={<Cpu className="h-4 w-4" />}
-              label="End Devices"
+              label="Data Streams"
               active
             />
           </nav>
@@ -204,10 +204,10 @@ function SidebarNav({
               active={location.pathname.endsWith("/overview")}
             />
             <NavItem
-              to={`/organizations/${organizationId}/gateways/${gatewayId}/end-devices`}
+              to={`/organizations/${organizationId}/gateways/${gatewayId}/data-streams`}
               icon={<Cpu className="h-4 w-4" />}
-              label="End Devices"
-              active={location.pathname.endsWith("/end-devices")}
+              label="Data Streams"
+              active={location.pathname.endsWith("/data-streams")}
             />
           </nav>
         </>
