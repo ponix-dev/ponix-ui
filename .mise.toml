@@ -26,3 +26,11 @@ run = "bun run build"
 [tasks.typecheck]
 description = "Type check all packages"
 run = "bun run typecheck"
+
+[tasks.e2e]
+description = "Run Playwright E2E tests"
+run = "bunx playwright test"
+
+[tasks."e2e:ui"]
+description = "Run Playwright E2E tests with UI"
+run = "bunx playwright test --ui"
