@@ -14,9 +14,9 @@
     "typescript": "^5.7.2"
   },
   "dependencies": {
-    "@buf/ponix_ponix.bufbuild_es": "^2.11.0-20260222230759-321a9c11336c.1",
-    "@buf/ponix_ponix.connectrpc_es": "^1.6.1-20260222230759-321a9c11336c.2",
-    "@buf/ponix_ponix.connectrpc_query-es": "^2.2.0-20260222230759-321a9c11336c.1",
+    "@buf/ponix_ponix.bufbuild_es": "^2.11.0-20260228234535-5d13f6c08c29.1",
+    "@buf/ponix_ponix.connectrpc_es": "^1.6.1-20260228234535-5d13f6c08c29.2",
+    "@buf/ponix_ponix.connectrpc_query-es": "^2.2.0-20260228234535-5d13f6c08c29.1",
     "@bufbuild/protobuf": "^2.11.0",
     "@codemirror/lang-json": "^6.0.2",
     "@codemirror/view": "^6.39.8",

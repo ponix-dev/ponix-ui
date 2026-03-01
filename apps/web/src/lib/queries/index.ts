@@ -16,17 +16,17 @@ import {
   getWorkspace,
 } from "@buf/ponix_ponix.connectrpc_query-es/workspace/v1/workspace-WorkspaceService_connectquery"
 
-// End device queries
+// Data stream queries
 import {
-  getWorkspaceEndDevices,
-  getGatewayEndDevices,
-} from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device-EndDeviceService_connectquery"
+  getWorkspaceDataStreams,
+  getGatewayDataStreams,
+} from "@buf/ponix_ponix.connectrpc_query-es/data_stream/v1/data_stream-DataStreamService_connectquery"
 
-// End device definition queries
+// Data stream definition queries
 import {
-  listEndDeviceDefinitions,
-  getEndDeviceDefinition,
-} from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device_definition-EndDeviceDefinitionService_connectquery"
+  listDataStreamDefinitions,
+  getDataStreamDefinition,
+} from "@buf/ponix_ponix.connectrpc_query-es/data_stream/v1/data_stream_definition-DataStreamDefinitionService_connectquery"
 
 // Organization query options
 export const organizationsQueryOptions = (transport: Transport, userId: string) =>
@@ -46,16 +46,16 @@ export const workspacesQueryOptions = (transport: Transport, orgId: string) =>
 export const workspaceQueryOptions = (transport: Transport, orgId: string, workspaceId: string) =>
   createQueryOptions(getWorkspace, { organizationId: orgId, workspaceId }, { transport })
 
-// Device query options
-export const devicesQueryOptions = (transport: Transport, orgId: string, workspaceId: string) =>
-  createQueryOptions(getWorkspaceEndDevices, { organizationId: orgId, workspaceId }, { transport })
+// Data stream query options
+export const dataStreamsQueryOptions = (transport: Transport, orgId: string, workspaceId: string) =>
+  createQueryOptions(getWorkspaceDataStreams, { organizationId: orgId, workspaceId }, { transport })
 
-export const gatewayDevicesQueryOptions = (transport: Transport, orgId: string, gatewayId: string) =>
-  createQueryOptions(getGatewayEndDevices, { organizationId: orgId, gatewayId }, { transport })
+export const gatewayDataStreamsQueryOptions = (transport: Transport, orgId: string, gatewayId: string) =>
+  createQueryOptions(getGatewayDataStreams, { organizationId: orgId, gatewayId }, { transport })
 
 // Definition query options
 export const definitionsQueryOptions = (transport: Transport, orgId: string) =>
-  createQueryOptions(listEndDeviceDefinitions, { organizationId: orgId }, { transport })
+  createQueryOptions(listDataStreamDefinitions, { organizationId: orgId }, { transport })
 
 export const definitionQueryOptions = (transport: Transport, orgId: string, definitionId: string) =>
-  createQueryOptions(getEndDeviceDefinition, { organizationId: orgId, id: definitionId }, { transport })
+  createQueryOptions(getDataStreamDefinition, { organizationId: orgId, id: definitionId }, { transport })

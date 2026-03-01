@@ -17,8 +17,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { create } from "@bufbuild/protobuf"
-import { listEndDeviceDefinitions, createEndDeviceDefinition } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device_definition-EndDeviceDefinitionService_connectquery"
-import { PayloadContractSchema } from "@buf/ponix_ponix.bufbuild_es/end_device/v1/end_device_definition_pb"
+import { listDataStreamDefinitions, createDataStreamDefinition } from "@buf/ponix_ponix.connectrpc_query-es/data_stream/v1/data_stream_definition-DataStreamDefinitionService_connectquery"
+import { PayloadContractSchema } from "@buf/ponix_ponix.bufbuild_es/data_stream/v1/data_stream_definition_pb"
 import { cn } from "@/lib/utils"
 import { definitionsQueryOptions } from "@/lib/queries"
 import { ContractListBuilder, createEmptyContract } from "@/components/contract-list-builder"
@@ -45,20 +45,20 @@ export const Route = createFileRoute("/_authenticated/organizations/$orgId/defin
       definitionsQueryOptions(context.transport, params.orgId)
     )
   },
-  component: EndDeviceDefinitionList,
+  component: DataStreamDefinitionList,
 })
 
-function EndDeviceDefinitionList() {
+function DataStreamDefinitionList() {
   const { orgId } = Route.useParams()
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [newDefinition, setNewDefinition] = useState<NewDefinitionState>(createInitialState)
 
-  const { data: definitionsResponse, refetch } = useSuspenseQuery(listEndDeviceDefinitions, { organizationId: orgId })
-  const definitions = definitionsResponse?.endDeviceDefinitions ?? []
+  const { data: definitionsResponse, refetch } = useSuspenseQuery(listDataStreamDefinitions, { organizationId: orgId })
+  const definitions = definitionsResponse?.dataStreamDefinitions ?? []
 
-  const createMutation = useMutation(createEndDeviceDefinition, {
+  const createMutation = useMutation(createDataStreamDefinition, {
     onSuccess: () => {
       setNewDefinition(createInitialState())
       setCurrentStep(1)
@@ -134,7 +134,7 @@ function EndDeviceDefinitionList() {
               <div>
                 <CardTitle className="text-base">All Definitions</CardTitle>
                 <CardDescription>
-                  End device definitions for this organization
+                  Data stream definitions for this organization
                 </CardDescription>
               </div>
               <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
@@ -146,7 +146,7 @@ function EndDeviceDefinitionList() {
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
-                    <DialogTitle>Create End Device Definition</DialogTitle>
+                    <DialogTitle>Create Data Stream Definition</DialogTitle>
                     <DialogDescription>
                       Step {currentStep} of {WIZARD_STEPS.length}: {WIZARD_STEPS[currentStep - 1].title}
                     </DialogDescription>
@@ -195,7 +195,7 @@ function EndDeviceDefinitionList() {
                             placeholder="Temperature Sensor v1"
                           />
                           <p className="text-sm text-muted-foreground">
-                            A descriptive name for this device definition.
+                            A descriptive name for this data stream definition.
                           </p>
                         </div>
                       </div>

@@ -24,14 +24,14 @@ export interface Gateway {
   deletedAt?: Date
 }
 
-// End Device types
+// Data Stream types
 export interface PayloadContract {
   matchExpression: string
   transformExpression: string
   jsonSchema: string
 }
 
-export interface EndDevice {
+export interface DataStream {
   id: string
   organizationId: string
   name: string

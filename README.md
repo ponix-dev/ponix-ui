@@ -1,6 +1,6 @@
 # Ponix UI
 
-Web interface for the Ponix IoT platform. Manages organizations, gateways, and end devices through a React-based dashboard.
+Web interface for the Ponix IoT platform. Manages organizations, gateways, and data streams through a React-based dashboard.
 
 ## Prerequisites
 
@@ -38,7 +38,7 @@ ponix-ui/
 │       └── Dockerfile
 ├── packages/
 │   └── shared/              # Shared types and utilities
-│       └── src/types/       # Domain types (Organization, Gateway, EndDevice)
+│       └── src/types/       # Domain types (Organization, Gateway, DataStream)
 ├── docker/                  # Docker Compose files
 ├── Tiltfile                 # Development orchestration
 └── .thoughts/               # Planning documents

@@ -4,31 +4,31 @@ import { timestampDate, type Timestamp } from "@bufbuild/protobuf/wkt"
 import { Radio, ChevronRight, Cpu } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { getGateway } from "@buf/ponix_ponix.connectrpc_query-es/gateway/v1/gateway-GatewayService_connectquery"
-import { getGatewayEndDevices } from "@buf/ponix_ponix.connectrpc_query-es/end_device/v1/end_device-EndDeviceService_connectquery"
-import { gatewayQueryOptions, gatewayDevicesQueryOptions } from "@/lib/queries"
+import { getGatewayDataStreams } from "@buf/ponix_ponix.connectrpc_query-es/data_stream/v1/data_stream-DataStreamService_connectquery"
+import { gatewayQueryOptions, gatewayDataStreamsQueryOptions } from "@/lib/queries"
 
-export const Route = createFileRoute("/_authenticated/organizations/$orgId/gateways/$gatewayId/end-devices")({
+export const Route = createFileRoute("/_authenticated/organizations/$orgId/gateways/$gatewayId/data-streams")({
   loader: async ({ context, params }) => {
     await Promise.all([
       context.queryClient.ensureQueryData(
         gatewayQueryOptions(context.transport, params.orgId, params.gatewayId)
       ),
       context.queryClient.ensureQueryData(
-        gatewayDevicesQueryOptions(context.transport, params.orgId, params.gatewayId)
+        gatewayDataStreamsQueryOptions(context.transport, params.orgId, params.gatewayId)
       ),
     ])
   },
-  component: GatewayEndDevices,
+  component: GatewayDataStreams,
 })
 
-function GatewayEndDevices() {
+function GatewayDataStreams() {
   const { orgId, gatewayId } = Route.useParams()
 
   const { data: gatewayResponse } = useSuspenseQuery(getGateway, { organizationId: orgId, gatewayId })
   const gateway = gatewayResponse?.gateway ?? null
 
-  const { data: devicesResponse } = useSuspenseQuery(getGatewayEndDevices, { organizationId: orgId, gatewayId })
-  const devices = devicesResponse?.endDevices ?? []
+  const { data: dataStreamsResponse } = useSuspenseQuery(getGatewayDataStreams, { organizationId: orgId, gatewayId })
+  const dataStreams = dataStreamsResponse?.dataStreams ?? []
 
   const formatDate = (timestamp: Timestamp | undefined) => {
     if (!timestamp) return "—"
@@ -51,7 +51,7 @@ function GatewayEndDevices() {
             <Radio className="h-5 w-5 text-muted-foreground" />
             <h1 className="text-lg font-semibold">{gateway.name}</h1>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />
-            <span className="text-lg text-muted-foreground">End Devices</span>
+            <span className="text-lg text-muted-foreground">Data Streams</span>
           </div>
         </div>
       </div>
@@ -60,21 +60,21 @@ function GatewayEndDevices() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Connected Devices</CardTitle>
+              <CardTitle className="text-base">Connected Data Streams</CardTitle>
               <CardDescription>
-                End devices connected through this gateway
+                Data streams connected through this gateway
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {devices.length === 0 ? (
+              {dataStreams.length === 0 ? (
                 <div className="py-8 text-center text-muted-foreground">
-                  No devices connected to this gateway
+                  No data streams connected to this gateway
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {devices.map((device) => (
+                  {dataStreams.map((dataStream) => (
                     <div
-                      key={device.deviceId}
+                      key={dataStream.dataStreamId}
                       className="flex items-center justify-between rounded-lg border p-4"
                     >
                       <div className="flex items-center gap-3">
@@ -82,14 +82,14 @@ function GatewayEndDevices() {
                           <Cpu className="h-5 w-5 text-muted-foreground" />
                         </div>
                         <div>
-                          <div className="font-medium">{device.name}</div>
+                          <div className="font-medium">{dataStream.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {device.deviceId}
+                            {dataStream.dataStreamId}
                           </div>
                         </div>
                       </div>
                       <div className="text-right text-xs text-muted-foreground">
-                        {formatDate(device.createdAt)}
+                        {formatDate(dataStream.createdAt)}
                       </div>
                     </div>
                   ))}

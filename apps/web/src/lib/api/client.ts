@@ -3,15 +3,15 @@ import { transport } from "./transport"
 
 import { OrganizationService } from "@buf/ponix_ponix.bufbuild_es/organization/v1/organization_pb"
 import { GatewayService } from "@buf/ponix_ponix.bufbuild_es/gateway/v1/gateway_pb"
-import { EndDeviceService } from "@buf/ponix_ponix.bufbuild_es/end_device/v1/end_device_pb"
-import { EndDeviceDefinitionService } from "@buf/ponix_ponix.bufbuild_es/end_device/v1/end_device_definition_pb"
+import { DataStreamService } from "@buf/ponix_ponix.bufbuild_es/data_stream/v1/data_stream_pb"
+import { DataStreamDefinitionService } from "@buf/ponix_ponix.bufbuild_es/data_stream/v1/data_stream_definition_pb"
 import { UserService } from "@buf/ponix_ponix.bufbuild_es/user/v1/user_pb"
 import { WorkspaceService } from "@buf/ponix_ponix.bufbuild_es/workspace/v1/workspace_pb"
 
 export const organizationClient = createClient(OrganizationService, transport)
 export const gatewayClient = createClient(GatewayService, transport)
-export const endDeviceClient = createClient(EndDeviceService, transport)
-export const endDeviceDefinitionClient = createClient(EndDeviceDefinitionService, transport)
+export const dataStreamClient = createClient(DataStreamService, transport)
+export const dataStreamDefinitionClient = createClient(DataStreamDefinitionService, transport)
 export const userClient = createClient(UserService, transport)
 export const workspaceClient = createClient(WorkspaceService, transport)
 
@@ -47,12 +47,12 @@ export {
 } from "@buf/ponix_ponix.bufbuild_es/gateway/v1/gateway_pb"
 
 export type {
-  EndDevice,
-  CreateEndDeviceRequest,
-  CreateEndDeviceResponse,
-  GetEndDeviceRequest,
-  GetEndDeviceResponse,
-} from "@buf/ponix_ponix.bufbuild_es/end_device/v1/end_device_pb"
+  DataStream,
+  CreateDataStreamRequest,
+  CreateDataStreamResponse,
+  GetDataStreamRequest,
+  GetDataStreamResponse,
+} from "@buf/ponix_ponix.bufbuild_es/data_stream/v1/data_stream_pb"
 
 export type {
   User,
@@ -89,14 +89,14 @@ export type {
 
 
 export type {
-  GetWorkspaceEndDevicesRequest,
-  GetWorkspaceEndDevicesResponse,
-} from "@buf/ponix_ponix.bufbuild_es/end_device/v1/end_device_pb"
+  GetWorkspaceDataStreamsRequest,
+  GetWorkspaceDataStreamsResponse,
+} from "@buf/ponix_ponix.bufbuild_es/data_stream/v1/data_stream_pb"
 
 export type {
-  EndDeviceDefinition,
-  CreateEndDeviceDefinitionRequest,
-  CreateEndDeviceDefinitionResponse,
-  ListEndDeviceDefinitionsRequest,
-  ListEndDeviceDefinitionsResponse,
-} from "@buf/ponix_ponix.bufbuild_es/end_device/v1/end_device_definition_pb"
+  DataStreamDefinition,
+  CreateDataStreamDefinitionRequest,
+  CreateDataStreamDefinitionResponse,
+  ListDataStreamDefinitionsRequest,
+  ListDataStreamDefinitionsResponse,
+} from "@buf/ponix_ponix.bufbuild_es/data_stream/v1/data_stream_definition_pb"
