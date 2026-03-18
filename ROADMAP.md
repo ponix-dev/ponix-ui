@@ -13,14 +13,24 @@ Harden the existing entity management UI and align with backend payload contract
 - [x] #22 — Rename End Device to Data Stream across UI
 - [ ] #5 — Gateway config form updates for deployer abstraction
 
-## Phase 2 — Collaborative Document Editor & Versioning
+## Phase 2a — Document CRUD
 
-Real-time collaborative document editing using Plate + Yjs/Yrs, with version history.
+gRPC client setup and document list/create/delete/unlink UI on entity pages.
+
+- [ ] #26 — Document management page (read-only browser)
+- [ ] #27 — Document association UI (create/update/unlink/list on parent entities)
+
+## Phase 2b — Collaborative Editor
+
+Plate + slate-yjs editor with custom WebSocket provider (first-message JWT auth).
 
 - [ ] #25 — Plate + Yjs collaborative editor component
-- [ ] #26 — Document management page
-- [ ] #27 — Document association UI
-- [ ] #28 — Version history UI
+
+## Phase 2c — Presence & Cursors
+
+Remote cursor rendering and awareness protocol integration.
+
+- [ ] #31 — Real-time presence and cursor tracking
 
 ## Phase 3 — Document Comments
 
@@ -29,21 +39,27 @@ Threaded comments anchored to document positions, with resolution workflow.
 - [ ] #29 — Threaded comments with anchor positions
 - [ ] #30 — Comment resolution workflow
 
-## Phase 4 — Downlink UI
+## Phase 4 — Version History
+
+Named snapshots of document state with diff display and restore.
+
+- [ ] #28 — Version history UI
+
+## Phase 5 — Downlink UI
 
 Enable sending commands to devices and tracking their lifecycle.
 
 - [ ] #10 — Downlink command form on data stream detail
 - [ ] #11 — Command history view with lifecycle status
 
-## Phase 5 — Workspace MCP & Agent Config UI
+## Phase 6 — Workspace MCP & Agent Config UI
 
 Workspace-level settings and MCP server management.
 
 - [ ] #12 — Workspace settings/config page
 - [ ] #13 — MCP server registry UI
 
-## Phase 6 — Workflow Management UI
+## Phase 7 — Workflow Management UI
 
 CRUD, trigger configuration, and observability for automated workflows.
 
@@ -51,7 +67,7 @@ CRUD, trigger configuration, and observability for automated workflows.
 - [ ] #15 — Trigger configuration UI (CEL + cron)
 - [ ] #16 — Workflow run history and audit viewer
 
-## Phase 7 — LoRaWAN / ChirpStack UI
+## Phase 8 — LoRaWAN / ChirpStack UI
 
 Specialized UI for LoRaWAN device onboarding and downlink configuration.
 
