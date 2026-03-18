@@ -5,9 +5,9 @@
     "": {
       "name": "ponix-ui",
       "dependencies": {
-        "@buf/ponix_ponix.bufbuild_es": "^2.11.0-20260228234535-5d13f6c08c29.1",
-        "@buf/ponix_ponix.connectrpc_es": "^1.6.1-20260228234535-5d13f6c08c29.2",
-        "@buf/ponix_ponix.connectrpc_query-es": "^2.2.0-20260228234535-5d13f6c08c29.1",
+        "@buf/ponix_ponix.bufbuild_es": "^2.11.0-20260309002748-6f9acd2ee519.1",
+        "@buf/ponix_ponix.connectrpc_es": "^1.6.1-20260309002748-6f9acd2ee519.2",
+        "@buf/ponix_ponix.connectrpc_query-es": "^2.2.0-20260309002748-6f9acd2ee519.1",
         "@bufbuild/protobuf": "^2.11.0",
         "@codemirror/lang-json": "^6.0.2",
         "@codemirror/view": "^6.39.8",
@@ -22,9 +22,9 @@
       "name": "@ponix/web",
       "version": "0.0.0",
       "dependencies": {
-        "@buf/ponix_ponix.bufbuild_es": "2.11.0-20260228234535-5d13f6c08c29.1",
-        "@buf/ponix_ponix.connectrpc_es": "1.6.1-20260228234535-5d13f6c08c29.2",
-        "@buf/ponix_ponix.connectrpc_query-es": "2.2.0-20260228234535-5d13f6c08c29.1",
+        "@buf/ponix_ponix.bufbuild_es": "2.11.0-20260309002748-6f9acd2ee519.1",
+        "@buf/ponix_ponix.connectrpc_es": "1.6.1-20260309002748-6f9acd2ee519.2",
+        "@buf/ponix_ponix.connectrpc_query-es": "2.2.0-20260309002748-6f9acd2ee519.1",
         "@bufbuild/protobuf": "^2.10.1",
         "@connectrpc/connect": "^2.1.1",
         "@connectrpc/connect-query": "^2.2.0",
@@ -127,11 +127,11 @@
 
     "@babel/types": ["@babel/types@7.28.5", "", { "dependencies": { "@babel/helper-string-parser": "^7.27.1", "@babel/helper-validator-identifier": "^7.28.5" } }, "sha512-qQ5m48eI/MFLQ5PxQj4PFaprjyCTLI37ElWMmNs0K8Lk3dVeOdNpB3ks8jc7yM5CDmVC73eMVk/trk3fgmrUpA=="],
 
-    "@buf/ponix_ponix.bufbuild_es": ["@buf/ponix_ponix.bufbuild_es@2.11.0-20260228234535-5d13f6c08c29.1", "https://buf.build/gen/npm/v1/@buf/ponix_ponix.bufbuild_es/-/ponix_ponix.bufbuild_es-2.11.0-20260228234535-5d13f6c08c29.1.tgz", { "peerDependencies": { "@bufbuild/protobuf": "^2.11.0" } }, ""],
+    "@buf/ponix_ponix.bufbuild_es": ["@buf/ponix_ponix.bufbuild_es@2.11.0-20260309002748-6f9acd2ee519.1", "https://buf.build/gen/npm/v1/@buf/ponix_ponix.bufbuild_es/-/ponix_ponix.bufbuild_es-2.11.0-20260309002748-6f9acd2ee519.1.tgz", { "peerDependencies": { "@bufbuild/protobuf": "^2.11.0" } }, ""],
 
-    "@buf/ponix_ponix.connectrpc_es": ["@buf/ponix_ponix.connectrpc_es@1.6.1-20260228234535-5d13f6c08c29.2", "https://buf.build/gen/npm/v1/@buf/ponix_ponix.connectrpc_es/-/ponix_ponix.connectrpc_es-1.6.1-20260228234535-5d13f6c08c29.2.tgz", { "dependencies": { "@buf/ponix_ponix.bufbuild_es": "1.10.0-20260228234535-5d13f6c08c29.1" }, "peerDependencies": { "@connectrpc/connect": "^1.6.1" } }, ""],
+    "@buf/ponix_ponix.connectrpc_es": ["@buf/ponix_ponix.connectrpc_es@1.6.1-20260309002748-6f9acd2ee519.2", "https://buf.build/gen/npm/v1/@buf/ponix_ponix.connectrpc_es/-/ponix_ponix.connectrpc_es-1.6.1-20260309002748-6f9acd2ee519.2.tgz", { "dependencies": { "@buf/ponix_ponix.bufbuild_es": "1.10.0-20260309002748-6f9acd2ee519.1" }, "peerDependencies": { "@connectrpc/connect": "^1.6.1" } }, ""],
 
-    "@buf/ponix_ponix.connectrpc_query-es": ["@buf/ponix_ponix.connectrpc_query-es@2.2.0-20260228234535-5d13f6c08c29.1", "https://buf.build/gen/npm/v1/@buf/ponix_ponix.connectrpc_query-es/-/ponix_ponix.connectrpc_query-es-2.2.0-20260228234535-5d13f6c08c29.1.tgz", { "dependencies": { "@buf/ponix_ponix.bufbuild_es": "2.7.0-20260228234535-5d13f6c08c29.1" }, "peerDependencies": { "@bufbuild/protobuf": "^2.7.0", "@connectrpc/connect-query": "^2.2.0" } }, ""],
+    "@buf/ponix_ponix.connectrpc_query-es": ["@buf/ponix_ponix.connectrpc_query-es@2.2.0-20260309002748-6f9acd2ee519.1", "https://buf.build/gen/npm/v1/@buf/ponix_ponix.connectrpc_query-es/-/ponix_ponix.connectrpc_query-es-2.2.0-20260309002748-6f9acd2ee519.1.tgz", { "dependencies": { "@buf/ponix_ponix.bufbuild_es": "2.7.0-20260309002748-6f9acd2ee519.1" }, "peerDependencies": { "@bufbuild/protobuf": "^2.7.0", "@connectrpc/connect-query": "^2.2.0" } }, ""],
 
     "@bufbuild/protobuf": ["@bufbuild/protobuf@2.11.0", "", {}, "sha512-sBXGT13cpmPR5BMgHE6UEEfEaShh5Ror6rfN3yEK5si7QVrtZg8LEPQb0VVhiLRUslD2yLnXtnRzG035J/mZXQ=="],
 
@@ -923,9 +923,9 @@
 
     "zod-validation-error": ["zod-validation-error@4.0.2", "", { "peerDependencies": { "zod": "^3.25.0 || ^4.0.0" } }, "sha512-Q6/nZLe6jxuU80qb/4uJ4t5v2VEZ44lzQjPDhYJNztRQ4wyWc6VF3D3Kb/fAuPetZQnhS3hnajCf9CsWesghLQ=="],
 
-    "@buf/ponix_ponix.connectrpc_es/@buf/ponix_ponix.bufbuild_es": ["@buf/ponix_ponix.bufbuild_es@1.10.0-20260228234535-5d13f6c08c29.1", "https://buf.build/gen/npm/v1/@buf/ponix_ponix.bufbuild_es/-/ponix_ponix.bufbuild_es-1.10.0-20260228234535-5d13f6c08c29.1.tgz", { "peerDependencies": { "@bufbuild/protobuf": "^1.10.0" } }, ""],
+    "@buf/ponix_ponix.connectrpc_es/@buf/ponix_ponix.bufbuild_es": ["@buf/ponix_ponix.bufbuild_es@1.10.0-20260309002748-6f9acd2ee519.1", "https://buf.build/gen/npm/v1/@buf/ponix_ponix.bufbuild_es/-/ponix_ponix.bufbuild_es-1.10.0-20260309002748-6f9acd2ee519.1.tgz", { "peerDependencies": { "@bufbuild/protobuf": "^1.10.0" } }, ""],
 
-    "@buf/ponix_ponix.connectrpc_query-es/@buf/ponix_ponix.bufbuild_es": ["@buf/ponix_ponix.bufbuild_es@2.7.0-20260228234535-5d13f6c08c29.1", "https://buf.build/gen/npm/v1/@buf/ponix_ponix.bufbuild_es/-/ponix_ponix.bufbuild_es-2.7.0-20260228234535-5d13f6c08c29.1.tgz", { "peerDependencies": { "@bufbuild/protobuf": "^2.7.0" } }, ""],
+    "@buf/ponix_ponix.connectrpc_query-es/@buf/ponix_ponix.bufbuild_es": ["@buf/ponix_ponix.bufbuild_es@2.7.0-20260309002748-6f9acd2ee519.1", "https://buf.build/gen/npm/v1/@buf/ponix_ponix.bufbuild_es/-/ponix_ponix.bufbuild_es-2.7.0-20260309002748-6f9acd2ee519.1.tgz", { "peerDependencies": { "@bufbuild/protobuf": "^2.7.0" } }, ""],
 
     "@eslint-community/eslint-utils/eslint-visitor-keys": ["eslint-visitor-keys@3.4.3", "", {}, "sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag=="],
 

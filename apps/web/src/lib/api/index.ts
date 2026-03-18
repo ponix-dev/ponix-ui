@@ -5,6 +5,7 @@ export {
   dataStreamDefinitionClient,
   userClient,
   workspaceClient,
+  documentClient,
 } from "./client"
 
 export { transport, setTokenGetter } from "./transport"
@@ -64,6 +65,11 @@ export type {
   CreateDataStreamDefinitionResponse,
   ListDataStreamDefinitionsRequest,
   ListDataStreamDefinitionsResponse,
+  Document,
+  GetDocumentRequest,
+  GetDocumentResponse,
+  DeleteDocumentRequest,
+  DeleteDocumentResponse,
 } from "./client"
 
 export {

@@ -1,6 +1,6 @@
 import { Link, useLocation, useParams } from "@tanstack/react-router"
 import { useQuery } from "@connectrpc/connect-query"
-import { Radio, Cpu, Home, Layers, ChevronLeft, FileCode } from "lucide-react"
+import { Radio, Cpu, Home, Layers, ChevronLeft, FileCode, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { OrgSwitcher } from "./OrgSwitcher"
 import { getOrganization } from "@buf/ponix_ponix.connectrpc_query-es/organization/v1/organization-OrganizationService_connectquery"
@@ -144,10 +144,16 @@ function SidebarNav({
           </div>
           <nav className="mt-2 grid gap-1 px-2">
             <NavItem
-              to={`/organizations/${organizationId}/workspaces/${workspaceId}`}
+              to={`/organizations/${organizationId}/workspaces/${workspaceId}/data-streams`}
               icon={<Cpu className="h-4 w-4" />}
               label="Data Streams"
-              active
+              active={location.pathname.endsWith("/data-streams")}
+            />
+            <NavItem
+              to={`/organizations/${organizationId}/workspaces/${workspaceId}/documents`}
+              icon={<FileText className="h-4 w-4" />}
+              label="Documents"
+              active={location.pathname.endsWith("/documents")}
             />
           </nav>
         </>
@@ -171,10 +177,16 @@ function SidebarNav({
           </div>
           <nav className="mt-2 grid gap-1 px-2">
             <NavItem
-              to={`/organizations/${organizationId}/definitions/${definitionId}`}
+              to={`/organizations/${organizationId}/definitions/${definitionId}/overview`}
               icon={<FileCode className="h-4 w-4" />}
               label="Overview"
-              active={location.pathname === `/organizations/${organizationId}/definitions/${definitionId}`}
+              active={location.pathname.endsWith("/overview")}
+            />
+            <NavItem
+              to={`/organizations/${organizationId}/definitions/${definitionId}/documents`}
+              icon={<FileText className="h-4 w-4" />}
+              label="Documents"
+              active={location.pathname.endsWith("/documents")}
             />
           </nav>
         </>
