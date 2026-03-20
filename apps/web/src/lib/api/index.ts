@@ -8,7 +8,7 @@ export {
   documentClient,
 } from "./client"
 
-export { transport, setTokenGetter } from "./transport"
+export { transport, setTokenGetter, getAccessToken } from "./transport"
 
 // Re-export all types
 export type {

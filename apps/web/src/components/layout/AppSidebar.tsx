@@ -1,12 +1,14 @@
-import { Link, useLocation, useParams } from "@tanstack/react-router"
+import { Link, useLocation, useParams, useSearch } from "@tanstack/react-router"
 import { useQuery } from "@connectrpc/connect-query"
 import { Radio, Cpu, Home, Layers, ChevronLeft, FileCode, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { OrgSwitcher } from "./OrgSwitcher"
+import { TableOfContents } from "@/components/table-of-contents"
 import { getOrganization } from "@buf/ponix_ponix.connectrpc_query-es/organization/v1/organization-OrganizationService_connectquery"
 import { getWorkspace } from "@buf/ponix_ponix.connectrpc_query-es/workspace/v1/workspace-WorkspaceService_connectquery"
 import { getDataStreamDefinition } from "@buf/ponix_ponix.connectrpc_query-es/data_stream/v1/data_stream_definition-DataStreamDefinitionService_connectquery"
 import { getGateway } from "@buf/ponix_ponix.connectrpc_query-es/gateway/v1/gateway-GatewayService_connectquery"
+import { getDocument } from "@buf/ponix_ponix.connectrpc_query-es/document/v1/document-DocumentService_connectquery"
 
 interface NavItemProps {
   to: string
@@ -59,13 +61,16 @@ function SidebarNav({
   workspaceId,
   definitionId,
   gatewayId,
+  documentId,
 }: {
   organizationId?: string
   workspaceId?: string
   definitionId?: string
   gatewayId?: string
+  documentId?: string
 }) {
   const location = useLocation()
+  const search = useSearch({ strict: false }) as { from?: string; parentId?: string }
 
   const { data: workspaceResponse } = useQuery(
     getWorkspace,
@@ -88,6 +93,34 @@ function SidebarNav({
   )
   const gatewayName = gatewayResponse?.gateway?.name
 
+  const { data: documentResponse } = useQuery(
+    getDocument,
+    { documentId: documentId ?? "", organizationId: organizationId ?? "" },
+    { enabled: !!organizationId && !!documentId }
+  )
+  const documentName = documentResponse?.document?.name
+
+  // Resolve back link for document pages
+  const documentBackLink = (() => {
+    if (!organizationId || !documentId) return null
+    if (search.from === "workspace" && search.parentId) {
+      return {
+        label: "Documents",
+        to: `/organizations/${organizationId}/workspaces/${search.parentId}/documents`,
+      }
+    }
+    if (search.from === "definition" && search.parentId) {
+      return {
+        label: "Documents",
+        to: `/organizations/${organizationId}/definitions/${search.parentId}/documents`,
+      }
+    }
+    return {
+      label: "Workspaces",
+      to: `/organizations/${organizationId}`,
+    }
+  })()
+
   return (
     <div className="flex-1 overflow-auto py-4">
       {/* Main navigation - no org selected */}
@@ -102,8 +135,8 @@ function SidebarNav({
         </nav>
       )}
 
-      {/* Organization navigation - org selected but no workspace, definition, or gateway */}
-      {organizationId && !workspaceId && !definitionId && !gatewayId && (
+      {/* Organization navigation - org selected but no workspace, definition, gateway, or document */}
+      {organizationId && !workspaceId && !definitionId && !gatewayId && !documentId && (
         <nav className="grid gap-1 px-2">
           <NavItem
             to={`/organizations/${organizationId}`}
@@ -224,17 +257,40 @@ function SidebarNav({
           </nav>
         </>
       )}
+
+      {/* Document navigation - document selected */}
+      {organizationId && documentId && documentBackLink && (
+        <>
+          <div className="px-4">
+            <Link
+              to={documentBackLink.to as "/"}
+              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+            >
+              <ChevronLeft className="h-3 w-3" />
+              {documentBackLink.label}
+            </Link>
+            <div className="mt-1 flex items-center gap-2 text-sm font-medium">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              {documentName || "Document"}
+            </div>
+          </div>
+          <div className="mt-4 border-t pt-3">
+            <TableOfContents />
+          </div>
+        </>
+      )}
     </div>
   )
 }
 
 export function AppSidebar() {
   const params = useParams({ strict: false })
-  const { orgId, workspaceId, definitionId, gatewayId } = params as {
+  const { orgId, workspaceId, definitionId, gatewayId, documentId } = params as {
     orgId?: string
     workspaceId?: string
     definitionId?: string
     gatewayId?: string
+    documentId?: string
   }
 
   return (
@@ -245,6 +301,7 @@ export function AppSidebar() {
         workspaceId={workspaceId}
         definitionId={definitionId}
         gatewayId={gatewayId}
+        documentId={documentId}
       />
     </div>
   )
