@@ -6,7 +6,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import { useRemoteCursorDecorations, RemoteCursorLeaf } from "@/components/ui/cursor-overlay"
 import { BasicNodesKit } from "@/components/editor/plugins/basic-nodes-kit"
-import { YjsSyncPlugin } from "@/components/editor/plugins/yjs-sync-plugin"
 import { Editor, EditorContainer } from "@/components/ui/editor"
 import { TocProvider } from "@/components/table-of-contents"
 import type { PonixProviderConfig } from "@/lib/collaboration"
@@ -97,8 +96,6 @@ function PresenceAvatars() {
   )
 }
 
-console.log("[collab-editor] MODULE LOADED, YjsSyncPlugin:", !!YjsSyncPlugin)
-
 export function CollaborativeEditor({ providerConfig, documentId }: CollaborativeEditorProps) {
   const [isConnected, setIsConnected] = useState(false)
   const [isSynced, setIsSynced] = useState(false)
@@ -124,7 +121,6 @@ export function CollaborativeEditor({ providerConfig, documentId }: Collaborativ
             onSyncChange: ({ isSynced: synced }) => setIsSynced(synced),
           },
         }),
-        YjsSyncPlugin,
       ],
       skipInitialization: true,
     },
