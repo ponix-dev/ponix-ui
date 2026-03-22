@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, Link } from "@tanstack/react-router"
 import { useSuspenseQuery, useMutation } from "@connectrpc/connect-query"
 import { timestampDate, type Timestamp } from "@bufbuild/protobuf/wkt"
 import { Cpu, Plus, ChevronLeft, ChevronRight, Check, ChevronsUpDown, Layers } from "lucide-react"
@@ -392,9 +392,12 @@ function DataStreamList() {
               ) : (
                 <div className="space-y-3">
                   {dataStreams.map((dataStream) => (
-                    <div
+                    <Link
                       key={dataStream.dataStreamId}
-                      className="flex items-center justify-between rounded-lg border p-4"
+                      to="/organizations/$orgId/data-streams/$dataStreamId/documents"
+                      params={{ orgId, dataStreamId: dataStream.dataStreamId }}
+                      search={{ workspaceId }}
+                      className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
                     >
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
@@ -410,7 +413,7 @@ function DataStreamList() {
                       <div className="text-right text-xs text-muted-foreground">
                         {formatDate(dataStream.createdAt)}
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}

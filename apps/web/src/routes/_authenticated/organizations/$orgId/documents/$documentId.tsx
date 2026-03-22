@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useSuspenseQuery, useQuery } from "@connectrpc/connect-query"
-import { FileText, ChevronRight, Layers, FileCode } from "lucide-react"
+import { FileText, ChevronRight, Layers, FileCode, Cpu } from "lucide-react"
 import { getDocument } from "@buf/ponix_ponix.connectrpc_query-es/document/v1/document-DocumentService_connectquery"
 import { getWorkspace } from "@buf/ponix_ponix.connectrpc_query-es/workspace/v1/workspace-WorkspaceService_connectquery"
 import { getDataStreamDefinition } from "@buf/ponix_ponix.connectrpc_query-es/data_stream/v1/data_stream_definition-DataStreamDefinitionService_connectquery"
+import { getDataStream } from "@buf/ponix_ponix.connectrpc_query-es/data_stream/v1/data_stream-DataStreamService_connectquery"
 import { documentQueryOptions } from "@/lib/queries"
 import { useCollaboration } from "@/lib/collaboration"
 import { CollaborativeEditor } from "@/components/collaborative-editor"
@@ -12,6 +13,7 @@ export const Route = createFileRoute("/_authenticated/organizations/$orgId/docum
   validateSearch: (search: Record<string, unknown>) => ({
     from: (search.from as string) || undefined,
     parentId: (search.parentId as string) || undefined,
+    workspaceId: (search.workspaceId as string) || undefined,
   }),
   loader: async ({ context, params }) => {
     await context.queryClient.ensureQueryData(
@@ -23,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/organizations/$orgId/docum
 
 function DocumentDetail() {
   const { orgId, documentId } = Route.useParams()
-  const { from, parentId } = Route.useSearch()
+  const { from, parentId, workspaceId: searchWorkspaceId } = Route.useSearch()
 
   const { data: documentResponse } = useSuspenseQuery(getDocument, { organizationId: orgId, documentId })
   const document = documentResponse?.document ?? null
@@ -39,14 +41,24 @@ function DocumentDetail() {
     { id: parentId ?? "", organizationId: orgId },
     { enabled: from === "definition" && !!parentId }
   )
+  const { data: dataStreamResponse } = useQuery(
+    getDataStream,
+    { dataStreamId: parentId ?? "", organizationId: orgId, workspaceId: searchWorkspaceId ?? "" },
+    { enabled: from === "datastream" && !!parentId && !!searchWorkspaceId }
+  )
 
   const parentName = from === "workspace"
     ? workspaceResponse?.workspace?.name
     : from === "definition"
       ? definitionResponse?.dataStreamDefinition?.name
-      : undefined
+      : from === "datastream"
+        ? dataStreamResponse?.dataStream?.name
+        : undefined
 
-  const ParentIcon = from === "workspace" ? Layers : from === "definition" ? FileCode : null
+  const ParentIcon = from === "workspace" ? Layers
+    : from === "definition" ? FileCode
+    : from === "datastream" ? Cpu
+    : null
 
   if (!document) {
     return (

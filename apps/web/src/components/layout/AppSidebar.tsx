@@ -7,6 +7,7 @@ import { TableOfContents } from "@/components/table-of-contents"
 import { getOrganization } from "@buf/ponix_ponix.connectrpc_query-es/organization/v1/organization-OrganizationService_connectquery"
 import { getWorkspace } from "@buf/ponix_ponix.connectrpc_query-es/workspace/v1/workspace-WorkspaceService_connectquery"
 import { getDataStreamDefinition } from "@buf/ponix_ponix.connectrpc_query-es/data_stream/v1/data_stream_definition-DataStreamDefinitionService_connectquery"
+import { getDataStream } from "@buf/ponix_ponix.connectrpc_query-es/data_stream/v1/data_stream-DataStreamService_connectquery"
 import { getGateway } from "@buf/ponix_ponix.connectrpc_query-es/gateway/v1/gateway-GatewayService_connectquery"
 import { getDocument } from "@buf/ponix_ponix.connectrpc_query-es/document/v1/document-DocumentService_connectquery"
 
@@ -61,16 +62,18 @@ function SidebarNav({
   workspaceId,
   definitionId,
   gatewayId,
+  dataStreamId,
   documentId,
 }: {
   organizationId?: string
   workspaceId?: string
   definitionId?: string
   gatewayId?: string
+  dataStreamId?: string
   documentId?: string
 }) {
   const location = useLocation()
-  const search = useSearch({ strict: false }) as { from?: string; parentId?: string }
+  const search = useSearch({ strict: false }) as { from?: string; parentId?: string; workspaceId?: string }
 
   const { data: workspaceResponse } = useQuery(
     getWorkspace,
@@ -92,6 +95,14 @@ function SidebarNav({
     { enabled: !!organizationId && !!gatewayId }
   )
   const gatewayName = gatewayResponse?.gateway?.name
+
+  const dataStreamWorkspaceId = search.workspaceId ?? ""
+  const { data: dataStreamResponse } = useQuery(
+    getDataStream,
+    { dataStreamId: dataStreamId ?? "", organizationId: organizationId ?? "", workspaceId: dataStreamWorkspaceId },
+    { enabled: !!organizationId && !!dataStreamId && !!dataStreamWorkspaceId }
+  )
+  const dataStreamName = dataStreamResponse?.dataStream?.name
 
   const { data: documentResponse } = useQuery(
     getDocument,
@@ -115,6 +126,12 @@ function SidebarNav({
         to: `/organizations/${organizationId}/definitions/${search.parentId}/documents`,
       }
     }
+    if (search.from === "datastream" && search.parentId) {
+      return {
+        label: "Documents",
+        to: `/organizations/${organizationId}/data-streams/${search.parentId}/documents?workspaceId=${search.workspaceId ?? ""}`,
+      }
+    }
     return {
       label: "Workspaces",
       to: `/organizations/${organizationId}`,
@@ -136,7 +153,7 @@ function SidebarNav({
       )}
 
       {/* Organization navigation - org selected but no workspace, definition, gateway, or document */}
-      {organizationId && !workspaceId && !definitionId && !gatewayId && !documentId && (
+      {organizationId && !workspaceId && !definitionId && !gatewayId && !dataStreamId && !documentId && (
         <nav className="grid gap-1 px-2">
           <NavItem
             to={`/organizations/${organizationId}`}
@@ -258,6 +275,33 @@ function SidebarNav({
         </>
       )}
 
+      {/* Data stream navigation - data stream selected */}
+      {organizationId && dataStreamId && (
+        <>
+          <div className="px-4">
+            <Link
+              // @ts-expect-error - TanStack Router expects typed routes
+              to={`/organizations/${organizationId}/workspaces/${dataStreamWorkspaceId}/data-streams`}
+              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+            >
+              <ChevronLeft className="h-3 w-3" />
+              Data Streams
+            </Link>
+            <div className="mt-1 text-sm font-medium">
+              {dataStreamName || "Data Stream"}
+            </div>
+          </div>
+          <nav className="mt-2 grid gap-1 px-2">
+            <NavItem
+              to={`/organizations/${organizationId}/data-streams/${dataStreamId}/documents?workspaceId=${dataStreamWorkspaceId}`}
+              icon={<FileText className="h-4 w-4" />}
+              label="Documents"
+              active={location.pathname.endsWith("/documents")}
+            />
+          </nav>
+        </>
+      )}
+
       {/* Document navigation - document selected */}
       {organizationId && documentId && documentBackLink && (
         <>
@@ -285,11 +329,12 @@ function SidebarNav({
 
 export function AppSidebar() {
   const params = useParams({ strict: false })
-  const { orgId, workspaceId, definitionId, gatewayId, documentId } = params as {
+  const { orgId, workspaceId, definitionId, gatewayId, dataStreamId, documentId } = params as {
     orgId?: string
     workspaceId?: string
     definitionId?: string
     gatewayId?: string
+    dataStreamId?: string
     documentId?: string
   }
 
@@ -301,6 +346,7 @@ export function AppSidebar() {
         workspaceId={workspaceId}
         definitionId={definitionId}
         gatewayId={gatewayId}
+        dataStreamId={dataStreamId}
         documentId={documentId}
       />
     </div>

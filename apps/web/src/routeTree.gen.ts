@@ -29,6 +29,7 @@ import { Route as AuthenticatedOrganizationsOrgIdGatewaysGatewayIdOverviewRouteI
 import { Route as AuthenticatedOrganizationsOrgIdGatewaysGatewayIdDataStreamsRouteImport } from './routes/_authenticated/organizations/$orgId/gateways/$gatewayId/data-streams'
 import { Route as AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdOverviewRouteImport } from './routes/_authenticated/organizations/$orgId/definitions/$definitionId/overview'
 import { Route as AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdDocumentsRouteImport } from './routes/_authenticated/organizations/$orgId/definitions/$definitionId/documents'
+import { Route as AuthenticatedOrganizationsOrgIdDataStreamsDataStreamIdDocumentsRouteImport } from './routes/_authenticated/organizations/$orgId/data-streams/$dataStreamId/documents'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -163,6 +164,14 @@ const AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdDocumentsRoute =
         AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdRouteRoute,
     } as any,
   )
+const AuthenticatedOrganizationsOrgIdDataStreamsDataStreamIdDocumentsRoute =
+  AuthenticatedOrganizationsOrgIdDataStreamsDataStreamIdDocumentsRouteImport.update(
+    {
+      id: '/data-streams/$dataStreamId/documents',
+      path: '/data-streams/$dataStreamId/documents',
+      getParentRoute: () => AuthenticatedOrganizationsOrgIdRouteRoute,
+    } as any,
+  )
 
 export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
@@ -178,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/organizations/$orgId/definitions': typeof AuthenticatedOrganizationsOrgIdDefinitionsIndexRoute
   '/organizations/$orgId/gateways': typeof AuthenticatedOrganizationsOrgIdGatewaysIndexRoute
   '/organizations/$orgId/workspaces': typeof AuthenticatedOrganizationsOrgIdWorkspacesIndexRoute
+  '/organizations/$orgId/data-streams/$dataStreamId/documents': typeof AuthenticatedOrganizationsOrgIdDataStreamsDataStreamIdDocumentsRoute
   '/organizations/$orgId/definitions/$definitionId/documents': typeof AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdDocumentsRoute
   '/organizations/$orgId/definitions/$definitionId/overview': typeof AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdOverviewRoute
   '/organizations/$orgId/gateways/$gatewayId/data-streams': typeof AuthenticatedOrganizationsOrgIdGatewaysGatewayIdDataStreamsRoute
@@ -198,6 +208,7 @@ export interface FileRoutesByTo {
   '/organizations/$orgId/definitions': typeof AuthenticatedOrganizationsOrgIdDefinitionsIndexRoute
   '/organizations/$orgId/gateways': typeof AuthenticatedOrganizationsOrgIdGatewaysIndexRoute
   '/organizations/$orgId/workspaces': typeof AuthenticatedOrganizationsOrgIdWorkspacesIndexRoute
+  '/organizations/$orgId/data-streams/$dataStreamId/documents': typeof AuthenticatedOrganizationsOrgIdDataStreamsDataStreamIdDocumentsRoute
   '/organizations/$orgId/definitions/$definitionId/documents': typeof AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdDocumentsRoute
   '/organizations/$orgId/definitions/$definitionId/overview': typeof AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdOverviewRoute
   '/organizations/$orgId/gateways/$gatewayId/data-streams': typeof AuthenticatedOrganizationsOrgIdGatewaysGatewayIdDataStreamsRoute
@@ -221,6 +232,7 @@ export interface FileRoutesById {
   '/_authenticated/organizations/$orgId/definitions/': typeof AuthenticatedOrganizationsOrgIdDefinitionsIndexRoute
   '/_authenticated/organizations/$orgId/gateways/': typeof AuthenticatedOrganizationsOrgIdGatewaysIndexRoute
   '/_authenticated/organizations/$orgId/workspaces/': typeof AuthenticatedOrganizationsOrgIdWorkspacesIndexRoute
+  '/_authenticated/organizations/$orgId/data-streams/$dataStreamId/documents': typeof AuthenticatedOrganizationsOrgIdDataStreamsDataStreamIdDocumentsRoute
   '/_authenticated/organizations/$orgId/definitions/$definitionId/documents': typeof AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdDocumentsRoute
   '/_authenticated/organizations/$orgId/definitions/$definitionId/overview': typeof AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdOverviewRoute
   '/_authenticated/organizations/$orgId/gateways/$gatewayId/data-streams': typeof AuthenticatedOrganizationsOrgIdGatewaysGatewayIdDataStreamsRoute
@@ -244,6 +256,7 @@ export interface FileRouteTypes {
     | '/organizations/$orgId/definitions'
     | '/organizations/$orgId/gateways'
     | '/organizations/$orgId/workspaces'
+    | '/organizations/$orgId/data-streams/$dataStreamId/documents'
     | '/organizations/$orgId/definitions/$definitionId/documents'
     | '/organizations/$orgId/definitions/$definitionId/overview'
     | '/organizations/$orgId/gateways/$gatewayId/data-streams'
@@ -264,6 +277,7 @@ export interface FileRouteTypes {
     | '/organizations/$orgId/definitions'
     | '/organizations/$orgId/gateways'
     | '/organizations/$orgId/workspaces'
+    | '/organizations/$orgId/data-streams/$dataStreamId/documents'
     | '/organizations/$orgId/definitions/$definitionId/documents'
     | '/organizations/$orgId/definitions/$definitionId/overview'
     | '/organizations/$orgId/gateways/$gatewayId/data-streams'
@@ -286,6 +300,7 @@ export interface FileRouteTypes {
     | '/_authenticated/organizations/$orgId/definitions/'
     | '/_authenticated/organizations/$orgId/gateways/'
     | '/_authenticated/organizations/$orgId/workspaces/'
+    | '/_authenticated/organizations/$orgId/data-streams/$dataStreamId/documents'
     | '/_authenticated/organizations/$orgId/definitions/$definitionId/documents'
     | '/_authenticated/organizations/$orgId/definitions/$definitionId/overview'
     | '/_authenticated/organizations/$orgId/gateways/$gatewayId/data-streams'
@@ -442,6 +457,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdDocumentsRouteImport
       parentRoute: typeof AuthenticatedOrganizationsOrgIdDefinitionsDefinitionIdRouteRoute
     }
+    '/_authenticated/organizations/$orgId/data-streams/$dataStreamId/documents': {
+      id: '/_authenticated/organizations/$orgId/data-streams/$dataStreamId/documents'
+      path: '/data-streams/$dataStreamId/documents'
+      fullPath: '/organizations/$orgId/data-streams/$dataStreamId/documents'
+      preLoaderRoute: typeof AuthenticatedOrganizationsOrgIdDataStreamsDataStreamIdDocumentsRouteImport
+      parentRoute: typeof AuthenticatedOrganizationsOrgIdRouteRoute
+    }
   }
 }
 
@@ -507,6 +529,7 @@ interface AuthenticatedOrganizationsOrgIdRouteRouteChildren {
   AuthenticatedOrganizationsOrgIdDefinitionsIndexRoute: typeof AuthenticatedOrganizationsOrgIdDefinitionsIndexRoute
   AuthenticatedOrganizationsOrgIdGatewaysIndexRoute: typeof AuthenticatedOrganizationsOrgIdGatewaysIndexRoute
   AuthenticatedOrganizationsOrgIdWorkspacesIndexRoute: typeof AuthenticatedOrganizationsOrgIdWorkspacesIndexRoute
+  AuthenticatedOrganizationsOrgIdDataStreamsDataStreamIdDocumentsRoute: typeof AuthenticatedOrganizationsOrgIdDataStreamsDataStreamIdDocumentsRoute
 }
 
 const AuthenticatedOrganizationsOrgIdRouteRouteChildren: AuthenticatedOrganizationsOrgIdRouteRouteChildren =
@@ -525,6 +548,8 @@ const AuthenticatedOrganizationsOrgIdRouteRouteChildren: AuthenticatedOrganizati
       AuthenticatedOrganizationsOrgIdGatewaysIndexRoute,
     AuthenticatedOrganizationsOrgIdWorkspacesIndexRoute:
       AuthenticatedOrganizationsOrgIdWorkspacesIndexRoute,
+    AuthenticatedOrganizationsOrgIdDataStreamsDataStreamIdDocumentsRoute:
+      AuthenticatedOrganizationsOrgIdDataStreamsDataStreamIdDocumentsRoute,
   }
 
 const AuthenticatedOrganizationsOrgIdRouteRouteWithChildren =

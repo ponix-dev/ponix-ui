@@ -8,8 +8,9 @@ interface DocumentListCardProps {
   documents: Document[]
   title?: string
   description?: string
-  from?: "workspace" | "definition"
+  from?: "workspace" | "definition" | "datastream"
   parentId?: string
+  workspaceId?: string
 }
 
 export function DocumentListCard({
@@ -19,6 +20,7 @@ export function DocumentListCard({
   description = "Documents associated with this resource",
   from,
   parentId,
+  workspaceId,
 }: DocumentListCardProps) {
   const formatDate = (timestamp: { seconds: bigint } | undefined) => {
     if (!timestamp) return "N/A"
@@ -43,7 +45,7 @@ export function DocumentListCard({
                 key={doc.documentId}
                 to="/organizations/$orgId/documents/$documentId"
                 params={{ orgId, documentId: doc.documentId }}
-                search={{ from, parentId }}
+                search={{ from, parentId, workspaceId }}
                 className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-muted/50"
               >
                 <div className="flex items-center gap-3">
