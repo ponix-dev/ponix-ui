@@ -64,6 +64,14 @@ export const TEST_DATA_STREAM = {
   gatewayId: TEST_GATEWAY.gatewayId,
 }
 
+export const TEST_DOCUMENT = {
+  documentId: "doc-1",
+  organizationId: TEST_ORG.id,
+  name: "Test Document",
+  createdAt: "2024-03-09T00:00:00Z",
+  updatedAt: "2024-03-09T00:00:00Z",
+}
+
 // ── Response factories ──
 
 export const responses = {
@@ -110,6 +118,16 @@ export const responses = {
     dataStreams,
   }),
   createDataStream: (dataStream = TEST_DATA_STREAM) => ({ dataStream }),
+  getDataStream: (dataStream = TEST_DATA_STREAM) => ({ dataStream }),
+
+  // Documents
+  listWorkspaceDocuments: (documents = [TEST_DOCUMENT]) => ({ documents }),
+  listDefinitionDocuments: (documents = [TEST_DOCUMENT]) => ({ documents }),
+  listDataStreamDocuments: (documents = [TEST_DOCUMENT]) => ({ documents }),
+  createWorkspaceDocument: (document = TEST_DOCUMENT) => ({ document }),
+  createDefinitionDocument: (document = TEST_DOCUMENT) => ({ document }),
+  createDataStreamDocument: (document = TEST_DOCUMENT) => ({ document }),
+  getDocument: (document = TEST_DOCUMENT) => ({ document }),
 }
 
 // ── Service paths ──
@@ -149,6 +167,16 @@ export const services = {
   getWorkspaceDataStreams: "data_stream.v1.DataStreamService/GetWorkspaceDataStreams",
   getGatewayDataStreams: "data_stream.v1.DataStreamService/GetGatewayDataStreams",
   createDataStream: "data_stream.v1.DataStreamService/CreateDataStream",
+  getDataStream: "data_stream.v1.DataStreamService/GetDataStream",
+
+  // Documents
+  listWorkspaceDocuments: "document.v1.DocumentService/ListWorkspaceDocuments",
+  listDefinitionDocuments: "document.v1.DocumentService/ListDefinitionDocuments",
+  listDataStreamDocuments: "document.v1.DocumentService/ListDataStreamDocuments",
+  createWorkspaceDocument: "document.v1.DocumentService/CreateWorkspaceDocument",
+  createDefinitionDocument: "document.v1.DocumentService/CreateDefinitionDocument",
+  createDataStreamDocument: "document.v1.DocumentService/CreateDataStreamDocument",
+  getDocument: "document.v1.DocumentService/GetDocument",
 } as const
 
 // ── ConnectRPC error helpers ──
