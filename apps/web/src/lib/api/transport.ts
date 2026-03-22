@@ -3,10 +3,14 @@ import { createGrpcWebTransport, createConnectTransport } from "@connectrpc/conn
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:50051"
 
 // Token getter - will be set by AuthContext
-let getAccessToken: (() => string | null) | null = null
+let tokenGetter: (() => string | null) | null = null
 
 export function setTokenGetter(getter: () => string | null) {
-  getAccessToken = getter
+  tokenGetter = getter
+}
+
+export function getAccessToken(): string | null {
+  return tokenGetter?.() ?? null
 }
 
 // Custom fetch to include credentials and auth header
@@ -14,7 +18,7 @@ const customFetch: typeof fetch = (input, init) => {
   const headers = new Headers(init?.headers)
 
   // Add Bearer token if available
-  const token = getAccessToken?.()
+  const token = tokenGetter?.()
   if (token) {
     headers.set("Authorization", `Bearer ${token}`)
   }

@@ -5,9 +5,10 @@ export {
   dataStreamDefinitionClient,
   userClient,
   workspaceClient,
+  documentClient,
 } from "./client"
 
-export { transport, setTokenGetter } from "./transport"
+export { transport, setTokenGetter, getAccessToken } from "./transport"
 
 // Re-export all types
 export type {
@@ -64,6 +65,11 @@ export type {
   CreateDataStreamDefinitionResponse,
   ListDataStreamDefinitionsRequest,
   ListDataStreamDefinitionsResponse,
+  Document,
+  GetDocumentRequest,
+  GetDocumentResponse,
+  DeleteDocumentRequest,
+  DeleteDocumentResponse,
 } from "./client"
 
 export {

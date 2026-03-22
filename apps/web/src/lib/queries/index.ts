@@ -28,6 +28,14 @@ import {
   getDataStreamDefinition,
 } from "@buf/ponix_ponix.connectrpc_query-es/data_stream/v1/data_stream_definition-DataStreamDefinitionService_connectquery"
 
+// Document queries
+import {
+  getDocument,
+  listDataStreamDocuments,
+  listDefinitionDocuments,
+  listWorkspaceDocuments,
+} from "@buf/ponix_ponix.connectrpc_query-es/document/v1/document-DocumentService_connectquery"
+
 // Organization query options
 export const organizationsQueryOptions = (transport: Transport, userId: string) =>
   createQueryOptions(userOrganizations, { userId }, { transport })
@@ -59,3 +67,16 @@ export const definitionsQueryOptions = (transport: Transport, orgId: string) =>
 
 export const definitionQueryOptions = (transport: Transport, orgId: string, definitionId: string) =>
   createQueryOptions(getDataStreamDefinition, { organizationId: orgId, id: definitionId }, { transport })
+
+// Document query options
+export const documentQueryOptions = (transport: Transport, orgId: string, documentId: string) =>
+  createQueryOptions(getDocument, { organizationId: orgId, documentId }, { transport })
+
+export const dataStreamDocumentsQueryOptions = (transport: Transport, orgId: string, workspaceId: string, dataStreamId: string) =>
+  createQueryOptions(listDataStreamDocuments, { organizationId: orgId, workspaceId, dataStreamId }, { transport })
+
+export const definitionDocumentsQueryOptions = (transport: Transport, orgId: string, definitionId: string) =>
+  createQueryOptions(listDefinitionDocuments, { organizationId: orgId, definitionId }, { transport })
+
+export const workspaceDocumentsQueryOptions = (transport: Transport, orgId: string, workspaceId: string) =>
+  createQueryOptions(listWorkspaceDocuments, { organizationId: orgId, workspaceId }, { transport })
